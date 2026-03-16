@@ -199,10 +199,6 @@ test("sunny path: two households share a grocery list end-to-end", async ({
   // Items are sorted by createdAt oldest-first, so Whole Milk is first.
   // We need the second edit button (Sourdough Bread).
   // More robust: locate the row containing the text, then find its edit button.
-  const sourdoughEditBtn = pageA
-    .locator("div")
-    .filter({ hasText: /^Sourdough Bread/ })
-    .getByLabel("Edit item");
   // If the above doesn't find a unique match, fall back to nth
   await pageA.getByLabel("Edit item").nth(1).click();
 

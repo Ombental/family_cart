@@ -23,7 +23,7 @@ export function useTripHistory(
 
   useEffect(() => {
     if (!groupId) {
-      setLoading(false);
+      setLoading(false); // eslint-disable-line react-hooks/set-state-in-effect -- guard for missing groupId
       return;
     }
 

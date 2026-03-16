@@ -78,7 +78,7 @@ function buildCatalog(
 
   // Sort: frequency desc, then name asc (case-insensitive)
   const suggestions: ItemSuggestion[] = Array.from(map.values()).map(
-    ({ fromCurrentItems: _, ...rest }) => rest
+    ({ name, qty, unit, notes, frequency }) => ({ name, qty, unit, notes, frequency })
   );
 
   suggestions.sort((a, b) => {
@@ -97,7 +97,7 @@ export function useItemCatalog(
 
   useEffect(() => {
     if (!groupId) {
-      setTrips([]);
+      setTrips([]); // eslint-disable-line react-hooks/set-state-in-effect -- guard for missing groupId
       return;
     }
 
