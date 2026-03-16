@@ -3,6 +3,11 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Users: readable and writable by anyone (no Firebase Auth yet)
+    match /users/{userId} {
+      allow read, write: if true;
+    }
+
     // Groups: readable and writable by anyone (pilot — no auth)
     match /groups/{groupId} {
       allow read, write: if true;
