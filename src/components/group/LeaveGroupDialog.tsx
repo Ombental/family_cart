@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AlertCircle, LogOut, Loader2 } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +32,7 @@ export function LeaveGroupDialog({
   onOpenChange,
   onConfirm,
 }: LeaveGroupDialogProps) {
+  const { t } = useLanguage();
   const [leaving, setLeaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,7 +46,7 @@ export function LeaveGroupDialog({
       onOpenChange(false);
     } catch (err) {
       console.error("Failed to leave group:", err);
-      setError("Failed to leave group. Please check your connection and try again.");
+      setError(t("leave.failed"));
       setLeaving(false);
     }
   };
@@ -53,10 +55,9 @@ export function LeaveGroupDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Leave {groupName}?</AlertDialogTitle>
+          <AlertDialogTitle>{t("leave.title", { groupName })}</AlertDialogTitle>
           <AlertDialogDescription>
-            Your household's pending items will be removed from the shared list.
-            This cannot be undone.
+            {t("leave.desc")}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -68,7 +69,7 @@ export function LeaveGroupDialog({
         )}
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={leaving}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={leaving}>{t("common.cancel")}</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             disabled={leaving}
@@ -76,13 +77,13 @@ export function LeaveGroupDialog({
           >
             {leaving ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Leaving...
+                <Loader2 className="h-4 w-4 animate-spin me-2" />
+                {t("leave.leaving")}
               </>
             ) : (
               <>
-                <LogOut className="h-4 w-4 mr-2" />
-                Leave Group
+                <LogOut className="h-4 w-4 me-2" />
+                {t("group.leaveGroup")}
               </>
             )}
           </AlertDialogAction>

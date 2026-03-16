@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGroup } from "@/hooks/useGroup";
 import { useTripHistory } from "@/hooks/useTripHistory";
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { Household } from "@/types/group";
 import type { PurchasedItemSnapshot } from "@/types/trip";
 import type { Timestamp } from "firebase/firestore";
@@ -20,10 +21,10 @@ import type { Timestamp } from "firebase/firestore";
 // Date formatting helper
 // ---------------------------------------------------------------------------
 
-function formatCompletedDate(ts: Timestamp | null): string {
-  if (!ts) return "Unknown date";
+function formatCompletedDate(ts: Timestamp | null, lang: string, t: (key: string) => string): string {
+  if (!ts) return t("common.unknownDate");
   const date = ts.toDate();
-  return date.toLocaleDateString("en-US", {
+  return date.toLocaleDateString(lang === "he" ? "he-IL" : "en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -59,11 +60,12 @@ export function TripSummaryPage() {
     tripId: string;
   }>();
   const navigate = useNavigate();
+  const { t, lang } = useLanguage();
   const { trips, loading: tripsLoading } = useTripHistory(groupId);
   const { households, loading: groupLoading } = useGroup(groupId);
 
   const trip = useMemo(
-    () => trips.find((t) => t.id === tripId) ?? null,
+    () => trips.find((tr) => tr.id === tripId) ?? null,
     [trips, tripId]
   );
 
@@ -133,18 +135,18 @@ export function TripSummaryPage() {
           <Button variant="ghost" size="icon" onClick={handleBack}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h2 className="text-xl font-bold tracking-tight">Trip Summary</h2>
+          <h2 className="text-xl font-bold tracking-tight">{t("trips.summaryTitle")}</h2>
         </div>
         <div className="text-center py-16 text-muted-foreground">
           <ShoppingCart className="h-10 w-10 mx-auto mb-3 opacity-50" />
-          <p className="text-sm">Trip not found.</p>
+          <p className="text-sm">{t("trips.notFound")}</p>
         </div>
       </div>
     );
   }
 
   const shopperName = trip.startedByHouseholdName;
-  const dateLabel = formatCompletedDate(trip.completedAt);
+  const dateLabel = formatCompletedDate(trip.completedAt, lang, t);
 
   return (
     <div className="min-h-screen pb-28">
@@ -154,13 +156,13 @@ export function TripSummaryPage() {
           variant="ghost"
           size="icon"
           onClick={handleBack}
-          aria-label="Back to trip history"
+          aria-label={t("trips.backToHistory")}
           className="text-white hover:bg-white/20 shrink-0"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h2 className="text-lg font-bold text-white uppercase tracking-wide">
-          Trip Summary
+          {t("trips.summaryTitle")}
         </h2>
       </div>
 
@@ -170,7 +172,7 @@ export function TripSummaryPage() {
           <CheckCircle2 className="h-10 w-10 text-[#30a46c]" />
         </div>
         <h1 className="text-[22px] font-bold text-[#1a1a1a]">
-          Trip Complete!
+          {t("trips.complete")}
         </h1>
         <p className="text-sm text-[#82827c]">
           {dateLabel} &mdash; by {shopperName}
@@ -184,12 +186,12 @@ export function TripSummaryPage() {
             {/* Overall count */}
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-[#1a1a1a]">
-                Trip Summary
+                {t("trips.summaryTitle")}
               </span>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-sm text-[#82827c]">Items purchased</span>
+              <span className="text-sm text-[#82827c]">{t("trips.itemsPurchasedLabel")}</span>
               <span className="text-lg font-bold text-[#1a1a1a]">
                 {totalPurchased}
               </span>
@@ -199,7 +201,7 @@ export function TripSummaryPage() {
             {householdGroups.length > 0 && (
               <div className="space-y-2 pt-2 border-t border-[#f0f0f0]">
                 <span className="text-xs font-semibold text-[#82827c] uppercase tracking-wide">
-                  Per Household
+                  {t("trips.perHousehold")}
                 </span>
                 {householdGroups.map((hg) => {
                   const isExpanded = expandedIds.has(hg.householdId);
@@ -224,8 +226,7 @@ export function TripSummaryPage() {
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
                           <span className="text-sm font-medium text-[#1a1a1a]">
-                            {hg.items.length} item
-                            {hg.items.length !== 1 ? "s" : ""}
+                            {hg.items.length !== 1 ? t("common.itemsPlural", { count: hg.items.length }) : t("common.items", { count: hg.items.length })}
                           </span>
                           {isExpanded ? (
                             <ChevronUp className="h-4 w-4 text-[#82827c] transition-transform duration-200" />
@@ -243,11 +244,11 @@ export function TripSummaryPage() {
                           {hg.items.map((item, idx) => (
                             <div
                               key={idx}
-                              className={`py-2 pl-3 ${idx !== hg.items.length - 1 ? "border-b border-[#eff1ef]" : ""}`}
+                              className={`py-2 ps-3 ${idx !== hg.items.length - 1 ? "border-b border-[#eff1ef]" : ""}`}
                               style={{
-                                borderLeftWidth: 4,
-                                borderLeftStyle: "solid",
-                                borderLeftColor: hg.householdColor,
+                                borderInlineStartWidth: 4,
+                                borderInlineStartStyle: "solid",
+                                borderInlineStartColor: hg.householdColor,
                               }}
                             >
                               <span className="text-[15px] font-semibold text-[#202020]">
@@ -255,7 +256,7 @@ export function TripSummaryPage() {
                               </span>
                               {item.qty > 0 && (
                                 <p className="text-[11px] text-[#8e8c99]">
-                                  Qty: {item.qty}{item.unit ? ` · ${item.unit}` : ""}
+                                  {t("items.qty", { label: item.qty + (item.unit ? ` · ${item.unit}` : "") })}
                                 </p>
                               )}
                             </div>
@@ -271,7 +272,7 @@ export function TripSummaryPage() {
             {/* Empty state */}
             {householdGroups.length === 0 && (
               <p className="text-sm text-[#82827c] text-center py-2">
-                No items were purchased in this trip.
+                {t("trips.noItemsPurchased")}
               </p>
             )}
           </CardContent>
@@ -284,7 +285,7 @@ export function TripSummaryPage() {
           className="w-full rounded-xl bg-[#3e332e] text-white hover:bg-[#3e332e]/90 h-12 text-base font-semibold"
           onClick={handleDone}
         >
-          Done
+          {t("trips.done")}
         </Button>
       </div>
     </div>

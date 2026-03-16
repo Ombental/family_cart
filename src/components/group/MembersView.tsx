@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LeaveGroupDialog } from "@/components/group/LeaveGroupDialog";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useHouseholdContext } from "@/hooks/useHousehold";
 import {
@@ -90,6 +91,7 @@ export function MembersView({
   households,
 }: MembersViewProps) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const { householdId } = useHouseholdContext(groupId);
 
@@ -139,11 +141,11 @@ export function MembersView({
     if (!renamingId) return;
     const trimmed = renameValue.trim();
     if (!trimmed) {
-      setRenameError("Name cannot be empty.");
+      setRenameError(t("members.nameEmpty"));
       return;
     }
     if (trimmed.length > 50) {
-      setRenameError("Name must be 50 characters or fewer.");
+      setRenameError(t("members.nameTooLong"));
       return;
     }
     setRenameSaving(true);
@@ -151,7 +153,7 @@ export function MembersView({
       await renameHousehold({ groupId, householdId: renamingId, newName: trimmed });
       cancelRename();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Rename failed.";
+      const msg = err instanceof Error ? err.message : t("members.renameFailed");
       setRenameError(msg);
     } finally {
       setRenameSaving(false);
@@ -179,15 +181,15 @@ export function MembersView({
     if (switchCreatingNew) {
       const trimmed = switchNewName.trim();
       if (!trimmed) {
-        setSwitchError("Name cannot be empty.");
+        setSwitchError(t("members.nameEmpty"));
         return;
       }
       if (trimmed.length > 50) {
-        setSwitchError("Name must be 50 characters or fewer.");
+        setSwitchError(t("members.nameTooLong"));
         return;
       }
     } else if (!switchTarget) {
-      setSwitchError("Select a household to switch to.");
+      setSwitchError(t("members.selectHousehold"));
       return;
     }
 
@@ -203,7 +205,7 @@ export function MembersView({
       });
       setSwitchDialogOpen(false);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Switch failed.";
+      const msg = err instanceof Error ? err.message : t("members.switchFailed");
       setSwitchError(msg);
     } finally {
       setSwitchSaving(false);
@@ -228,7 +230,7 @@ export function MembersView({
       setDeleteDialogOpen(false);
       navigate(`/group/${groupId}`, { replace: true });
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Delete failed.";
+      const msg = err instanceof Error ? err.message : t("members.deleteFailed");
       setDeleteError(msg);
     } finally {
       setDeleting(false);
@@ -254,14 +256,14 @@ export function MembersView({
       return (
         <div className="flex items-center gap-1.5 mt-1">
           <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">Loading members...</span>
+          <span className="text-xs text-muted-foreground">{t("members.loadingMembers")}</span>
         </div>
       );
     }
 
     if (hh.memberUserIds.length === 0) {
       return (
-        <p className="text-xs text-muted-foreground mt-1">No members</p>
+        <p className="text-xs text-muted-foreground mt-1">{t("members.noMembers")}</p>
       );
     }
 
@@ -274,8 +276,8 @@ export function MembersView({
             <li key={uid} className="text-sm text-muted-foreground">
               {name}
               {isCurrentUser && (
-                <span className="ml-1 text-xs font-medium text-primary">
-                  (you)
+                <span className="ms-1 text-xs font-medium text-primary">
+                  {t("members.you")}
                 </span>
               )}
             </li>
@@ -352,7 +354,7 @@ export function MembersView({
                     <p className="font-medium truncate">{hh.name}</p>
                     {isMine && (
                       <span className="text-[10px] uppercase tracking-wider text-primary font-semibold shrink-0">
-                        Your household
+                        {t("members.yourHousehold")}
                       </span>
                     )}
                   </div>
@@ -363,9 +365,8 @@ export function MembersView({
                 )}
 
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  <Users className="inline h-3 w-3 mr-1 align-text-bottom" />
-                  {hh.memberUserIds.length} member
-                  {hh.memberUserIds.length !== 1 ? "s" : ""}
+                  <Users className="inline h-3 w-3 me-1 align-text-bottom" />
+                  {hh.memberUserIds.length !== 1 ? t("common.membersPlural", { count: hh.memberUserIds.length }) : t("common.members", { count: hh.memberUserIds.length })}
                 </p>
 
                 {renderMemberList(hh)}
@@ -380,7 +381,7 @@ export function MembersView({
                   size="icon"
                   className="h-8 w-8"
                   onClick={() => startRename(hh)}
-                  title="Rename household"
+                  title={t("members.renameHousehold")}
                 >
                   <Edit2 className="h-4 w-4" />
                 </Button>
@@ -389,7 +390,7 @@ export function MembersView({
                   size="icon"
                   className="h-8 w-8"
                   onClick={openSwitchDialog}
-                  title="Switch household"
+                  title={t("members.switchHousehold")}
                 >
                   <ArrowRightLeft className="h-4 w-4" />
                 </Button>
@@ -398,7 +399,7 @@ export function MembersView({
                   size="icon"
                   className="h-8 w-8 text-destructive hover:text-destructive"
                   onClick={openDeleteDialog}
-                  title="Delete household"
+                  title={t("members.deleteHousehold")}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -431,14 +432,14 @@ export function MembersView({
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h2 className="text-xl font-bold tracking-tight">Members</h2>
+          <h2 className="text-xl font-bold tracking-tight">{t("members.title")}</h2>
           <p className="text-sm text-muted-foreground">{groupName}</p>
         </div>
       </div>
 
       {/* Household count */}
       <p className="text-sm text-muted-foreground">
-        {households.length} household{households.length !== 1 ? "s" : ""}
+        {households.length !== 1 ? t("common.householdsPlural", { count: households.length }) : t("common.households", { count: households.length })}
       </p>
 
       {/* Household cards */}
@@ -447,7 +448,7 @@ export function MembersView({
 
         {households.length === 0 && (
           <p className="text-sm text-muted-foreground text-center py-4">
-            No households have joined yet.
+            {t("members.noHouseholds")}
           </p>
         )}
       </div>
@@ -456,9 +457,9 @@ export function MembersView({
       <Dialog open={switchDialogOpen} onOpenChange={setSwitchDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Switch Household</DialogTitle>
+            <DialogTitle>{t("members.switchTitle")}</DialogTitle>
             <DialogDescription>
-              Move to an existing household or create a new one.
+              {t("members.switchDesc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -467,7 +468,7 @@ export function MembersView({
               <button
                 key={hh.id}
                 type="button"
-                className={`w-full flex items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
+                className={`w-full flex items-center gap-3 rounded-lg border p-3 text-start transition-colors ${
                   switchTarget === hh.id && !switchCreatingNew
                     ? "border-primary bg-primary/5"
                     : "hover:bg-muted/50"
@@ -485,8 +486,7 @@ export function MembersView({
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate">{hh.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {hh.memberUserIds.length} member
-                    {hh.memberUserIds.length !== 1 ? "s" : ""}
+                    {hh.memberUserIds.length !== 1 ? t("common.membersPlural", { count: hh.memberUserIds.length }) : t("common.members", { count: hh.memberUserIds.length })}
                   </p>
                 </div>
               </button>
@@ -495,7 +495,7 @@ export function MembersView({
             {/* Create new household option */}
             <button
               type="button"
-              className={`w-full flex items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
+              className={`w-full flex items-center gap-3 rounded-lg border p-3 text-start transition-colors ${
                 switchCreatingNew
                   ? "border-primary bg-primary/5"
                   : "hover:bg-muted/50"
@@ -509,12 +509,12 @@ export function MembersView({
               <div className="h-6 w-6 rounded-full shrink-0 bg-muted flex items-center justify-center">
                 <Plus className="h-4 w-4 text-muted-foreground" />
               </div>
-              <p className="text-sm font-medium">Create new household</p>
+              <p className="text-sm font-medium">{t("members.createNewHousehold")}</p>
             </button>
 
             {switchCreatingNew && (
               <Input
-                placeholder="New household name"
+                placeholder={t("members.newHouseholdPlaceholder")}
                 value={switchNewName}
                 onChange={(e) => {
                   setSwitchNewName(e.target.value);
@@ -539,16 +539,16 @@ export function MembersView({
               onClick={() => setSwitchDialogOpen(false)}
               disabled={switchSaving}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button onClick={confirmSwitch} disabled={switchSaving}>
               {switchSaving ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Switching...
+                  <Loader2 className="h-4 w-4 animate-spin me-2" />
+                  {t("members.switching")}
                 </>
               ) : (
-                "Switch"
+                t("members.switch")
               )}
             </Button>
           </DialogFooter>
@@ -559,10 +559,9 @@ export function MembersView({
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Household</DialogTitle>
+            <DialogTitle>{t("members.deleteTitle")}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete your household? This will remove
-              all your items from the shared list and cannot be undone.
+              {t("members.deleteDesc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -579,7 +578,7 @@ export function MembersView({
               onClick={() => setDeleteDialogOpen(false)}
               disabled={deleting}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -588,13 +587,13 @@ export function MembersView({
             >
               {deleting ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Deleting...
+                  <Loader2 className="h-4 w-4 animate-spin me-2" />
+                  {t("members.deleting")}
                 </>
               ) : (
                 <>
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Household
+                  <Trash2 className="h-4 w-4 me-2" />
+                  {t("members.deleteButton")}
                 </>
               )}
             </Button>
@@ -610,7 +609,7 @@ export function MembersView({
           onClick={() => setLeaveDialogOpen(true)}
         >
           <LogOut className="h-4 w-4" />
-          Leave Group
+          {t("group.leaveGroup")}
         </Button>
       </div>
 

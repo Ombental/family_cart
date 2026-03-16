@@ -44,7 +44,7 @@ export function ShopperSubRow({
     <button
       type="button"
       onClick={handleToggle}
-      className={`flex w-full items-start gap-3 px-4 py-3 min-h-[56px] text-left transition-colors active:bg-muted/50 ${
+      className={`flex w-full items-start gap-3 px-4 py-3 min-h-[56px] text-start transition-colors active:bg-muted/50 ${
         isBought ? "opacity-50" : "hover:bg-muted/30"
       }`}
       aria-label={`${isBought ? "Uncheck" : "Check off"} ${item.name} for ${householdName}`}

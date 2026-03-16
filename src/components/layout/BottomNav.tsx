@@ -1,5 +1,6 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { House, ListChecks, User } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface NavTab {
   label: string;
@@ -16,6 +17,7 @@ export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const { groupId } = useParams<{ groupId: string }>();
+  const { t } = useLanguage();
 
   // Resolve the group ID from either the URL or localStorage
   const resolvedGroupId =
@@ -23,19 +25,19 @@ export function BottomNav() {
 
   const tabs: NavTab[] = [
     {
-      label: "Home",
+      label: t("nav.home"),
       icon: House,
       path: "/",
       match: (p) => p === "/",
     },
     {
-      label: "List",
+      label: t("nav.list"),
       icon: ListChecks,
       path: resolvedGroupId ? `/group/${resolvedGroupId}` : null,
       match: (p) => p.startsWith("/group/") && !p.includes("/shopper"),
     },
     {
-      label: "Profile",
+      label: t("nav.profile"),
       icon: User,
       path: "/profile",
       match: (p: string) => p === "/profile",

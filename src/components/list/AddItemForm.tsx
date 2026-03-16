@@ -64,7 +64,7 @@ function AddItemFAB({ onClick, disabled }: { onClick: () => void; disabled: bool
       onClick={onClick}
       disabled={disabled}
       aria-label="Add item"
-      className="fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform active:scale-95 disabled:opacity-50"
+      className="fixed bottom-20 end-4 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform active:scale-95 disabled:opacity-50"
       style={{ backgroundColor: "#2a7e3b" }}
     >
       <Plus className="h-7 w-7 text-white" />

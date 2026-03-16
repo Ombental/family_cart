@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface AppShellProps {
   children: ReactNode;
@@ -15,6 +16,7 @@ interface AppShellProps {
  * - "none": No header, no bottom nav (standalone pages)
  */
 export function AppShell({ children, variant = "default" }: AppShellProps) {
+  const { t } = useLanguage();
   const showHeader = variant === "default";
   const showBottomNav = variant === "default";
 
@@ -33,7 +35,7 @@ export function AppShell({ children, variant = "default" }: AppShellProps) {
               className="text-lg font-semibold tracking-tight"
               style={{ color: "var(--fc-text-on-dark)" }}
             >
-              FamilyCart
+              {t("common.appName")}
             </h1>
           </div>
         </header>

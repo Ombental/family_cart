@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { Copy, Share2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface InviteDisplayProps {
   inviteCode: string;
@@ -20,10 +21,11 @@ export function InviteDisplay({
   onRegenerate,
   showRegenerate = false,
 }: InviteDisplayProps) {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
 
-  const shareText = `Join my family group "${groupName}" on FamilyCart! Use invite code: ${inviteCode}`;
+  const shareText = t("invite.shareText", { groupName, code: inviteCode });
 
   const handleCopy = useCallback(async () => {
     try {
@@ -47,7 +49,7 @@ export function InviteDisplay({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Join my FamilyCart group",
+          title: t("invite.shareTitle"),
           text: shareText,
         });
       } catch {
@@ -70,7 +72,7 @@ export function InviteDisplay({
     <Card>
       <CardContent className="space-y-4 pt-6">
         <div className="text-center">
-          <p className="text-sm text-muted-foreground mb-2">Invite Code</p>
+          <p className="text-sm text-muted-foreground mb-2">{t("invite.code")}</p>
           <p className="text-3xl font-mono font-bold tracking-[0.3em] text-foreground">
             {inviteCode}
           </p>
@@ -84,7 +86,7 @@ export function InviteDisplay({
             className="gap-2"
           >
             <Copy className="h-4 w-4" />
-            {copied ? "Copied!" : "Copy code"}
+            {copied ? t("invite.copied") : t("invite.copyCode")}
           </Button>
 
           {typeof navigator !== "undefined" && "share" in navigator && (
@@ -95,7 +97,7 @@ export function InviteDisplay({
               className="gap-2"
             >
               <Share2 className="h-4 w-4" />
-              Share
+              {t("invite.share")}
             </Button>
           )}
 
@@ -110,7 +112,7 @@ export function InviteDisplay({
               <RefreshCw
                 className={`h-4 w-4 ${regenerating ? "animate-spin" : ""}`}
               />
-              New code
+              {t("invite.newCode")}
             </Button>
           )}
         </div>

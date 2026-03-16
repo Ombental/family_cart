@@ -17,26 +17,26 @@ import {
   joinGroup,
   JoinError,
 } from "@/lib/firestore-groups";
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { Household } from "@/types/group";
 
 // ---------------------------------------------------------------------------
-// Error messages mapped from JoinError codes
+// Error message keys mapped from JoinError codes
 // ---------------------------------------------------------------------------
-const ERROR_MESSAGES: Record<string, string> = {
-  invalid_code: "That invite code doesn't exist. Check and try again.",
-  expired: "This invite code has expired. Ask your group for a new one.",
-  already_member: "You're already a member of this group.",
-  household_name_taken:
-    "A household with that name already exists in this group.",
-  household_limit:
-    "This group has reached its household limit. Contact the group owner.",
+const ERROR_MESSAGE_KEYS: Record<string, string> = {
+  invalid_code: "join.errorInvalidCode",
+  expired: "join.errorExpired",
+  already_member: "join.errorAlreadyMember",
+  household_name_taken: "join.errorHouseholdNameTaken",
+  household_limit: "join.errorHouseholdLimit",
 };
 
-function friendlyError(err: unknown): string {
+function friendlyError(err: unknown, t: (key: string) => string): string {
   if (err instanceof JoinError) {
-    return ERROR_MESSAGES[err.code] ?? err.message;
+    const key = ERROR_MESSAGE_KEYS[err.code];
+    return key ? t(key) : err.message;
   }
-  return "Something went wrong. Please try again.";
+  return t("join.errorGeneric");
 }
 
 // ---------------------------------------------------------------------------
@@ -65,6 +65,7 @@ function StepInviteCode({
     households: Household[];
   }) => void;
 }) {
+  const { t } = useLanguage();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,7 +75,7 @@ function StepInviteCode({
       e.preventDefault();
       const trimmed = code.trim().toUpperCase();
       if (trimmed.length !== 6) {
-        setError("Invite code must be 6 characters.");
+        setError(t("join.inviteCodeLength"));
         return;
       }
       setLoading(true);
@@ -88,25 +89,25 @@ function StepInviteCode({
           households: result.households,
         });
       } catch (err) {
-        setError(friendlyError(err));
+        setError(friendlyError(err, t));
         setLoading(false);
       }
     },
-    [code, onValidated]
+    [code, onValidated, t]
   );
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Join a group</CardTitle>
+        <CardTitle>{t("join.title")}</CardTitle>
         <CardDescription>
-          Enter the 6-character invite code shared by your group.
+          {t("join.desc")}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="invite-code">Invite code</Label>
+            <Label htmlFor="invite-code">{t("join.inviteCode")}</Label>
             <Input
               id="invite-code"
               value={code}
@@ -128,11 +129,11 @@ function StepInviteCode({
           >
             {loading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Validating...
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
+                {t("join.validating")}
               </>
             ) : (
-              "Validate"
+              t("join.validate")
             )}
           </Button>
         </form>
@@ -156,6 +157,7 @@ function StepHouseholdPicker({
   onBack: () => void;
 }) {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const [newName, setNewName] = useState("");
@@ -175,11 +177,11 @@ function StepHouseholdPicker({
         });
         navigate(`/group/${groupId}`, { replace: true });
       } catch (err) {
-        setError(friendlyError(err));
+        setError(friendlyError(err, t));
         setLoading(false);
       }
     },
-    [user, inviteCode, navigate]
+    [user, inviteCode, navigate, t]
   );
 
   const handleJoinExisting = useCallback(
@@ -213,9 +215,9 @@ function StepHouseholdPicker({
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <CardTitle>Joining {groupName}</CardTitle>
+            <CardTitle>{t("join.joiningGroup", { groupName })}</CardTitle>
             <CardDescription>
-              Pick an existing household or create a new one.
+              {t("join.pickHousehold")}
             </CardDescription>
           </div>
         </div>
@@ -227,7 +229,7 @@ function StepHouseholdPicker({
         {households.length > 0 && (
           <div className="space-y-2">
             <Label className="text-muted-foreground text-xs uppercase tracking-wide">
-              Existing households
+              {t("join.existingHouseholds")}
             </Label>
             {households.map((hh) => (
               <button
@@ -235,7 +237,7 @@ function StepHouseholdPicker({
                 type="button"
                 disabled={loading}
                 onClick={() => handleJoinExisting(hh.id)}
-                className="flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent disabled:opacity-50"
+                className="flex w-full items-center gap-3 rounded-lg border p-3 text-start transition-colors hover:bg-accent disabled:opacity-50"
               >
                 <span
                   className="h-3 w-3 shrink-0 rounded-full"
@@ -258,20 +260,20 @@ function StepHouseholdPicker({
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">or</span>
+              <span className="bg-card px-2 text-muted-foreground">{t("common.or")}</span>
             </div>
           </div>
         )}
 
         {/* Create new household */}
         <form onSubmit={handleCreateNew} className="space-y-2">
-          <Label htmlFor="new-household-name">Create new household</Label>
+          <Label htmlFor="new-household-name">{t("join.createNewHousehold")}</Label>
           <div className="flex gap-2">
             <Input
               id="new-household-name"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="e.g. The Smiths"
+              placeholder={t("join.newHouseholdPlaceholder")}
               disabled={loading}
               className="flex-1"
             />
@@ -282,7 +284,7 @@ function StepHouseholdPicker({
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                "Create"
+                t("common.create")
               )}
             </Button>
           </div>
@@ -296,6 +298,7 @@ function StepHouseholdPicker({
 // Page
 // ---------------------------------------------------------------------------
 export function JoinGroupPage() {
+  const { t } = useLanguage();
   const [step, setStep] = useState<
     | { phase: "code" }
     | {
@@ -312,7 +315,7 @@ export function JoinGroupPage() {
       <Button asChild variant="ghost" size="sm" className="gap-2">
         <Link to="/">
           <ArrowLeft className="h-4 w-4" />
-          Back
+          {t("common.back")}
         </Link>
       </Button>
 

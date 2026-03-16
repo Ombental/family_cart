@@ -61,9 +61,9 @@ export function ItemRow({ item, household, onClick, children }: ItemRowProps) {
         isBought ? "opacity-50" : ""
       }${onClick ? " cursor-pointer select-none active:bg-muted/60 transition-colors" : ""}`}
       style={{
-        borderLeftWidth: 4,
-        borderLeftStyle: "solid",
-        borderLeftColor: household?.color ?? "#e0e0e0",
+        borderInlineStartWidth: 4,
+        borderInlineStartStyle: "solid",
+        borderInlineStartColor: household?.color ?? "#e0e0e0",
       }}
     >
       {/* Item details */}

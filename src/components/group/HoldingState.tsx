@@ -3,6 +3,7 @@ import { Clock, Lock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InviteDisplay } from "@/components/invite/InviteDisplay";
 import { regenerateInviteCode } from "@/lib/firestore-groups";
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { Group } from "@/types/group";
 
 interface HoldingStateProps {
@@ -15,6 +16,7 @@ interface HoldingStateProps {
  * The grocery list is locked until a 2nd household joins.
  */
 export function HoldingState({ group, onInviteRegenerated }: HoldingStateProps) {
+  const { t } = useLanguage();
   const handleRegenerate = useCallback(async () => {
     const newCode = await regenerateInviteCode(group.id);
     onInviteRegenerated?.(newCode);
@@ -27,13 +29,12 @@ export function HoldingState({ group, onInviteRegenerated }: HoldingStateProps) 
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
             <Clock className="h-5 w-5" />
-            Waiting for another household to join...
+            {t("holding.waiting")}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-amber-700 dark:text-amber-300">
           <p>
-            Share the invite code below with another household. Once they join,
-            your shared grocery list will activate automatically.
+            {t("holding.shareInvite")}
           </p>
         </CardContent>
       </Card>
@@ -50,9 +51,9 @@ export function HoldingState({ group, onInviteRegenerated }: HoldingStateProps) 
       <Card className="opacity-60">
         <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
           <Lock className="h-10 w-10 mb-3" />
-          <p className="text-sm font-medium">Grocery list is locked</p>
+          <p className="text-sm font-medium">{t("holding.listLocked")}</p>
           <p className="text-xs mt-1">
-            It will unlock when a second household joins.
+            {t("holding.listLockedDesc")}
           </p>
         </CardContent>
       </Card>

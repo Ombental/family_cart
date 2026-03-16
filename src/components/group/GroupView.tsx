@@ -24,6 +24,7 @@ import { useItems } from "@/hooks/useItems";
 import { useTrip } from "@/hooks/useTrip";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useItemCatalog } from "@/hooks/useItemCatalog";
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { Group, Household } from "@/types/group";
 import type { Item } from "@/types/item";
 
@@ -42,6 +43,7 @@ interface GroupViewProps {
  */
 export function GroupView({ group, households }: GroupViewProps) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const { householdId, householdName } = useHouseholdContext(group.id);
   const { isOnline } = useOnlineStatus();
@@ -119,14 +121,14 @@ export function GroupView({ group, households }: GroupViewProps) {
         <div>
           <h2 className="text-2xl font-bold tracking-tight">{group.name}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {households.length} household{households.length !== 1 ? "s" : ""}
+            {households.length !== 1 ? t("common.householdsPlural", { count: households.length }) : t("common.households", { count: households.length })}
           </p>
         </div>
 
         {/* Settings menu with Leave Group option */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Group settings">
+            <Button variant="ghost" size="icon" aria-label={t("group.settings")}>
               <Settings className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
@@ -135,8 +137,8 @@ export function GroupView({ group, households }: GroupViewProps) {
               className="text-destructive focus:text-destructive"
               onSelect={() => setLeaveDialogOpen(true)}
             >
-              <LogOut className="h-4 w-4 mr-2" />
-              Leave Group
+              <LogOut className="h-4 w-4 me-2" />
+              {t("group.leaveGroup")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -166,7 +168,7 @@ export function GroupView({ group, households }: GroupViewProps) {
           onClick={() => navigate(`/group/${group.id}/members`)}
         >
           <Users className="h-4 w-4" />
-          Members
+          {t("members.title")}
         </Button>
         <Button
           variant="outline"
@@ -175,7 +177,7 @@ export function GroupView({ group, households }: GroupViewProps) {
           onClick={() => navigate(`/group/${group.id}/trips`)}
         >
           <ClipboardList className="h-4 w-4" />
-          Trip History
+          {t("trips.history")}
         </Button>
       </div>
 
@@ -184,8 +186,8 @@ export function GroupView({ group, households }: GroupViewProps) {
         <div className="space-y-2">
           {isShopperMode && !isCurrentHouseholdShopping && (
             <p className="text-sm text-muted-foreground px-1">
-              <ShoppingCart className="inline h-4 w-4 mr-1 align-text-bottom" />
-              Shopping in progress by{" "}
+              <ShoppingCart className="inline h-4 w-4 me-1 align-text-bottom" />
+              {t("group.shoppingInProgress")}{" "}
               <span className="font-medium">
                 {activeTrip?.startedByHouseholdName}
               </span>
@@ -204,8 +206,8 @@ export function GroupView({ group, households }: GroupViewProps) {
               <ShoppingCart className="h-5 w-5" />
             )}
             {isCurrentHouseholdShopping
-              ? "Continue Shopping"
-              : "Start Shopping"}
+              ? t("group.continueShopping")
+              : t("group.startShopping")}
           </Button>
         </div>
       )}
@@ -214,9 +216,9 @@ export function GroupView({ group, households }: GroupViewProps) {
       {!itemsLoading && items.length > 0 && (
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-[15px]">Current Shopping List</CardTitle>
+            <CardTitle className="text-[15px]">{t("group.currentShoppingList")}</CardTitle>
             <p className="text-[13px] text-[#82827c]">
-              {items.length} item{items.length !== 1 ? "s" : ""} total
+              {items.length !== 1 ? t("group.totalItemsPlural", { count: items.length }) : t("group.totalItems", { count: items.length })}
             </p>
           </CardHeader>
           <CardContent className="pt-0">
@@ -234,7 +236,7 @@ export function GroupView({ group, households }: GroupViewProps) {
                     <span className="text-sm">{hh.name}</span>
                   </div>
                   <span className="text-sm text-[#82827c]">
-                    {count} item{count !== 1 ? "s" : ""}
+                    {count !== 1 ? t("common.itemsPlural", { count }) : t("common.items", { count })}
                   </span>
                 </div>
               );
@@ -275,6 +277,9 @@ export function GroupView({ group, households }: GroupViewProps) {
                       itemName: item.name,
                       softDelete: () => softDeleteItem(item.id),
                       undoDelete: () => undoDeleteItem(item.id),
+                      removedLabel: t("items.removed", { name: item.name }),
+                      undoLabel: t("items.undo"),
+                      undoFailedLabel: t("items.undoFailed"),
                     })
                   }
                 />
@@ -290,7 +295,7 @@ export function GroupView({ group, households }: GroupViewProps) {
       {/* Invite section */}
       <div>
         <h3 className="text-sm font-medium text-muted-foreground mb-3">
-          Invite more households
+          {t("group.inviteMore")}
         </h3>
         <InviteDisplay
           inviteCode={group.inviteCode}
