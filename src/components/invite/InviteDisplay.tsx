@@ -56,7 +56,7 @@ export function InviteDisplay({
         // User cancelled or share failed — silently ignore
       }
     }
-  }, [shareText]);
+  }, [shareText, t]);
 
   const handleRegenerate = useCallback(async () => {
     if (!onRegenerate) return;

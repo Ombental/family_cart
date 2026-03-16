@@ -158,7 +158,7 @@ export function MembersView({
     } finally {
       setRenameSaving(false);
     }
-  }, [renamingId, renameValue, groupId, cancelRename]);
+  }, [renamingId, renameValue, groupId, cancelRename, t]);
 
   // ---- Switch dialog state ----
   const [switchDialogOpen, setSwitchDialogOpen] = useState(false);
@@ -210,7 +210,7 @@ export function MembersView({
     } finally {
       setSwitchSaving(false);
     }
-  }, [user, groupId, householdId, switchCreatingNew, switchNewName, switchTarget]);
+  }, [user, groupId, householdId, switchCreatingNew, switchNewName, switchTarget, t]);
 
   // ---- Delete dialog state ----
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -235,7 +235,7 @@ export function MembersView({
     } finally {
       setDeleting(false);
     }
-  }, [groupId, householdId, navigate]);
+  }, [groupId, householdId, navigate, t]);
 
   // ---- Leave group state ----
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
