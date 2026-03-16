@@ -124,6 +124,30 @@ describe("createTrip", () => {
     expect(result).toEqual({ conflict: false, tripId: "new-trip-123" });
   });
 
+  it("includes startedByUserName when provided", async () => {
+    mockGetDocs.mockResolvedValue({ empty: true, docs: [] });
+    mockAddDoc.mockResolvedValue({ id: "new-trip-456" });
+
+    const result = await createTrip({
+      groupId: "group-abc",
+      startedByHouseholdId: "household-1",
+      startedByHouseholdName: "Smith Family",
+      startedByUserName: "Alice",
+    });
+
+    expect(mockAddDoc).toHaveBeenCalledWith("mock-collection-ref", {
+      startedAt: { _type: "serverTimestamp" },
+      completedAt: null,
+      status: "active",
+      startedByHouseholdId: "household-1",
+      startedByHouseholdName: "Smith Family",
+      startedByUserName: "Alice",
+      purchasedItems: [],
+    });
+
+    expect(result).toEqual({ conflict: false, tripId: "new-trip-456" });
+  });
+
   it("returns conflict when active trip exists", async () => {
     // Mock getDocs returning a trip doc (active trip already exists)
     mockGetDocs.mockResolvedValue({

@@ -73,6 +73,7 @@ export async function createGroup(
     name: groupName,
     inviteCode,
     inviteExpiresAt,
+    createdByUserId: userId,
   });
 
   batch.set(householdRef, {
@@ -91,6 +92,54 @@ export async function createGroup(
   await batch.commit();
 
   return { groupId: groupRef.id, inviteCode };
+}
+
+// ---------------------------------------------------------------------------
+// RENAME GROUP
+// ---------------------------------------------------------------------------
+
+export interface RenameGroupParams {
+  groupId: string;
+  newName: string;
+}
+
+/**
+ * Rename a group and fan out the denormalized name to all members' memberships.
+ */
+export async function renameGroup(params: RenameGroupParams): Promise<void> {
+  const { groupId, newName } = params;
+  const trimmed = newName.trim();
+
+  if (!trimmed || trimmed.length > 50) {
+    throw new Error("Group name must be 1-50 characters.");
+  }
+
+  // Collect all member user IDs across all households
+  const householdsSnap = await getDocs(
+    collection(db, "groups", groupId, "households")
+  );
+
+  const allUserIds = new Set<string>();
+  for (const hhDoc of householdsSnap.docs) {
+    const members = hhDoc.data().memberUserIds as string[];
+    for (const uid of members) {
+      allUserIds.add(uid);
+    }
+  }
+
+  const batch = writeBatch(db);
+
+  // Update group doc name
+  const groupRef = doc(db, "groups", groupId);
+  batch.update(groupRef, { name: trimmed });
+
+  // Fan out to all members' membership docs
+  for (const uid of allUserIds) {
+    const membershipRef = doc(db, "users", uid, "groupMemberships", groupId);
+    batch.update(membershipRef, { groupName: trimmed });
+  }
+
+  await batch.commit();
 }
 
 // ---------------------------------------------------------------------------
@@ -344,6 +393,7 @@ export async function fetchGroup(groupId: string): Promise<Group | null> {
     name: data.name,
     inviteCode: data.inviteCode,
     inviteExpiresAt: data.inviteExpiresAt,
+    createdByUserId: data.createdByUserId ?? undefined,
   };
 }
 
@@ -383,6 +433,7 @@ export function subscribeToGroup(
       name: data.name,
       inviteCode: data.inviteCode,
       inviteExpiresAt: data.inviteExpiresAt,
+      createdByUserId: data.createdByUserId ?? undefined,
     });
   });
 }
@@ -674,6 +725,100 @@ export async function deleteHousehold(
   }
 
   // Commit all batches sequentially
+  for (const b of batches) {
+    await b.commit();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// DELETE GROUP  (creator only)
+// ---------------------------------------------------------------------------
+
+export interface DeleteGroupParams {
+  groupId: string;
+  userId: string;
+}
+
+/**
+ * Delete a group entirely. Only the creator can delete.
+ * Blocked during active trips. Removes all items, trips, households,
+ * membership docs, and the group doc itself.
+ */
+export async function deleteGroup(params: DeleteGroupParams): Promise<void> {
+  const { groupId, userId } = params;
+
+  // Verify creator
+  const groupRef = doc(db, "groups", groupId);
+  const groupSnap = await getDoc(groupRef);
+  if (!groupSnap.exists()) throw new Error("Group not found.");
+  if (groupSnap.data().createdByUserId !== userId) {
+    throw new Error("Only the group creator can delete this group.");
+  }
+
+  // Check for active trip
+  const tripsRef = collection(db, "groups", groupId, "trips");
+  const activeTripsQuery = query(tripsRef, where("status", "==", "active"));
+  const activeTripsSnap = await getDocs(activeTripsQuery);
+  if (!activeTripsSnap.empty) {
+    throw new Error("Cannot delete group while a trip is active.");
+  }
+
+  // Collect all member user IDs across all households
+  const householdsSnap = await getDocs(
+    collection(db, "groups", groupId, "households")
+  );
+  const allUserIds = new Set<string>();
+  for (const hhDoc of householdsSnap.docs) {
+    const members = hhDoc.data().memberUserIds as string[];
+    for (const uid of members) {
+      allUserIds.add(uid);
+    }
+  }
+
+  // Collect all items and trips for deletion
+  const itemsSnap = await getDocs(collection(db, "groups", groupId, "items"));
+  const tripsSnap = await getDocs(tripsRef);
+
+  // Build batches (respect 499-op limit)
+  let batch = writeBatch(db);
+  let opsInBatch = 0;
+  const batches: ReturnType<typeof writeBatch>[] = [batch];
+
+  const addOp = (fn: (b: ReturnType<typeof writeBatch>) => void) => {
+    if (opsInBatch >= BATCH_SIZE_LIMIT) {
+      batch = writeBatch(db);
+      batches.push(batch);
+      opsInBatch = 0;
+    }
+    fn(batch);
+    opsInBatch++;
+  };
+
+  // Delete items
+  for (const itemDoc of itemsSnap.docs) {
+    addOp((b) => b.delete(itemDoc.ref));
+  }
+
+  // Delete trips
+  for (const tripDoc of tripsSnap.docs) {
+    addOp((b) => b.delete(tripDoc.ref));
+  }
+
+  // Delete households
+  for (const hhDoc of householdsSnap.docs) {
+    addOp((b) => b.delete(hhDoc.ref));
+  }
+
+  // Delete membership docs
+  for (const uid of allUserIds) {
+    const membershipRef = doc(db, "users", uid, "groupMemberships", groupId);
+    addOp((b) => b.delete(membershipRef));
+  }
+
+  // Delete group doc
+  addOp((b) => b.delete(groupRef));
+
+  // Commit all batches
   for (const b of batches) {
     await b.commit();
   }

@@ -150,7 +150,7 @@ function TripCard({ trip, lang, t, onClick }: TripCardProps) {
             {formatTripDate(trip.completedAt, lang, t)}
           </div>
           <p className="text-sm text-muted-foreground truncate">
-            {t("trips.startedBy", { name: trip.startedByHouseholdName })}
+            {t("trips.startedBy", { name: trip.startedByUserName || trip.startedByHouseholdName })}
           </p>
           <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
             <Package className="h-3 w-3" />

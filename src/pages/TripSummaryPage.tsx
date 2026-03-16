@@ -145,7 +145,7 @@ export function TripSummaryPage() {
     );
   }
 
-  const shopperName = trip.startedByHouseholdName;
+  const shopperName = trip.startedByUserName || trip.startedByHouseholdName;
   const dateLabel = formatCompletedDate(trip.completedAt, lang, t);
 
   return (

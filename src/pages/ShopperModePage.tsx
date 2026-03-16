@@ -8,6 +8,7 @@ import { ShopperGroupCard } from "@/components/shopper/ShopperGroupCard";
 import { useTrip } from "@/hooks/useTrip";
 import { useItems } from "@/hooks/useItems";
 import { useHouseholdContext } from "@/hooks/useHousehold";
+import { useAuth } from "@/hooks/useAuth";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useGroup } from "@/hooks/useGroup";
 import { useItemCatalog } from "@/hooks/useItemCatalog";
@@ -31,12 +32,14 @@ export function ShopperModePage() {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { householdId, householdName } = useHouseholdContext(groupId);
+  const { user } = useAuth();
   const { isOnline } = useOnlineStatus();
   const { households } = useGroup(groupId);
   const { activeTrip, loading: tripLoading, completeTrip } = useTrip(
     groupId,
     householdId,
-    householdName
+    householdName,
+    user?.displayName ?? ""
   );
   const {
     items,
