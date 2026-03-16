@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { Item } from "@/types/item";
 import type { Household } from "@/types/group";
 
@@ -26,6 +27,7 @@ interface ItemRowProps {
  * cursor-pointer and active-state feedback for check-off UX.
  */
 export function ItemRow({ item, household, onClick, children }: ItemRowProps) {
+  const { t } = useLanguage();
   const isBought = item.status === "bought";
 
   const qtyLabel =
@@ -36,7 +38,7 @@ export function ItemRow({ item, household, onClick, children }: ItemRowProps) {
   // Build meta line segments: "Qty: 2 L", "Household Name"
   const metaParts: string[] = [];
   if (qtyLabel) {
-    metaParts.push(`Qty: ${qtyLabel}`);
+    metaParts.push(t("items.qty", { label: qtyLabel }));
   }
   if (household) {
     metaParts.push(household.name);
