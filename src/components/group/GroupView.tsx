@@ -186,7 +186,7 @@ export function GroupView({ group, households }: GroupViewProps) {
       const result = await startTrip();
 
       if (result.conflict) {
-        setConflictHouseholdName(result.activeTrip.startedByHouseholdName);
+        setConflictHouseholdName(result.activeTrip.startedByUserName || result.activeTrip.startedByHouseholdName);
         setConflictDialogOpen(true);
       } else {
         navigate(`/group/${group.id}/shopper`);
@@ -351,7 +351,9 @@ export function GroupView({ group, households }: GroupViewProps) {
               <ShoppingCart className="inline h-4 w-4 me-1 align-text-bottom" />
               {t("group.shoppingInProgress")}{" "}
               <span className="font-medium">
-                {activeTrip?.startedByHouseholdName}
+                {activeTrip?.activeShoppers && activeTrip.activeShoppers.length > 0
+                  ? activeTrip.activeShoppers.map((s) => s.userName || s.householdName).join(", ")
+                  : activeTrip?.startedByUserName || activeTrip?.startedByHouseholdName}
               </span>
             </p>
           )}
