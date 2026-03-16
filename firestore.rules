@@ -95,6 +95,15 @@ service cloud.firestore {
 
         allow delete: if true;
         // TODO: allow read, write: if isMemberOfGroup(request.auth.uid, groupId);
+
+        // Join requests subcollection (collaborative shopping)
+        match /joinRequests/{requestId} {
+          allow read: if true;
+          allow create: if true;
+          allow update: if true;
+          allow delete: if true;
+          // TODO: allow read, write: if isMemberOfGroup(request.auth.uid, groupId);
+        }
       }
     }
   }
