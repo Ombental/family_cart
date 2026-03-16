@@ -23,6 +23,7 @@ import {
   arrayUnion,
   arrayRemove,
   serverTimestamp,
+  runTransaction,
   type Unsubscribe,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -155,6 +156,13 @@ export async function joinGroup(
     throw new JoinError("invalid_code", "This invite code doesn't match any group.");
   }
 
+  // Warn on invite code collision (multiple groups sharing the same code)
+  if (snap.docs.length > 1) {
+    console.warn(
+      `[joinGroup] Invite code collision detected for "${normalised}" — ${snap.docs.length} groups match. Using first result.`
+    );
+  }
+
   const groupDoc = snap.docs[0];
   const groupData = groupDoc.data();
   const groupId = groupDoc.id;
@@ -165,16 +173,14 @@ export async function joinGroup(
     throw new JoinError("expired", "This invite code has expired. Ask for a new one.");
   }
 
-  // 3. Check if user already has a membership in this group
-  const membershipRef = doc(db, "users", userId, "groupMemberships", groupId);
-  const membershipSnap = await getDoc(membershipRef);
-  if (membershipSnap.exists()) {
-    throw new JoinError("already_member", "You're already in this group.");
-  }
-
-  // 4. Load existing households for validation
+  // 3. Load existing households for validation (outside transaction because
+  // Firestore transactions do not support collection queries).
   const householdsColRef = collection(db, "groups", groupId, "households");
   const householdsSnap = await getDocs(householdsColRef);
+
+  // 4. Use a transaction to atomically check membership and write, eliminating
+  // the TOCTOU race between the existence check and the write.
+  const membershipRef = doc(db, "users", userId, "groupMemberships", groupId);
 
   if (existingHouseholdId) {
     // Join an existing household
@@ -184,22 +190,27 @@ export async function joinGroup(
     }
 
     const householdData = householdDoc.data();
-    const batch = writeBatch(db);
 
-    // Add user to household's memberUserIds
-    batch.update(householdDoc.ref, {
-      memberUserIds: arrayUnion(userId),
+    await runTransaction(db, async (tx) => {
+      const membershipSnap = await tx.get(membershipRef);
+      if (membershipSnap.exists()) {
+        throw new JoinError("already_member", "You're already in this group.");
+      }
+
+      // Add user to household's memberUserIds
+      tx.update(householdDoc.ref, {
+        memberUserIds: arrayUnion(userId),
+      });
+
+      // Create membership doc
+      tx.set(membershipRef, {
+        householdId: existingHouseholdId,
+        householdName: householdData.name,
+        groupName: groupData.name,
+        joinedAt: serverTimestamp(),
+      });
     });
 
-    // Create membership doc
-    batch.set(membershipRef, {
-      householdId: existingHouseholdId,
-      householdName: householdData.name,
-      groupName: groupData.name,
-      joinedAt: serverTimestamp(),
-    });
-
-    await batch.commit();
     return { groupId, householdId: existingHouseholdId };
   }
 
@@ -229,22 +240,26 @@ export async function joinGroup(
     const color = pickHouseholdColor(householdsSnap.size);
     const householdRef = doc(collection(db, "groups", groupId, "households"));
 
-    const batch = writeBatch(db);
+    await runTransaction(db, async (tx) => {
+      const membershipSnap = await tx.get(membershipRef);
+      if (membershipSnap.exists()) {
+        throw new JoinError("already_member", "You're already in this group.");
+      }
 
-    batch.set(householdRef, {
-      name: trimmedName,
-      color,
-      memberUserIds: [userId],
+      tx.set(householdRef, {
+        name: trimmedName,
+        color,
+        memberUserIds: [userId],
+      });
+
+      tx.set(membershipRef, {
+        householdId: householdRef.id,
+        householdName: trimmedName,
+        groupName: groupData.name,
+        joinedAt: serverTimestamp(),
+      });
     });
 
-    batch.set(membershipRef, {
-      householdId: householdRef.id,
-      householdName: trimmedName,
-      groupName: groupData.name,
-      joinedAt: serverTimestamp(),
-    });
-
-    await batch.commit();
     return { groupId, householdId: householdRef.id };
   }
 
@@ -598,6 +613,10 @@ export interface DeleteHouseholdParams {
  * Blocked during active trips. Removes the household doc, deletes pending
  * items, and cleans up membership docs for all members.
  */
+// Firestore batches are capped at 500 operations. Keep each batch
+// safely below that limit to avoid silent failures with large item lists.
+const BATCH_SIZE_LIMIT = 499;
+
 export async function deleteHousehold(
   params: DeleteHouseholdParams
 ): Promise<void> {
@@ -618,10 +637,11 @@ export async function deleteHousehold(
 
   const memberUserIds = householdSnap.data().memberUserIds as string[];
 
-  const batch = writeBatch(db);
-
-  // Delete household doc
+  // First batch: household delete + pending item deletes + membership deletes
+  let batch = writeBatch(db);
   batch.delete(householdRef);
+  let opsInBatch = 1;
+  const batches: ReturnType<typeof writeBatch>[] = [batch];
 
   // Delete pending items from this household
   const itemsRef = collection(db, "groups", groupId, "items");
@@ -632,16 +652,31 @@ export async function deleteHousehold(
   );
   const pendingItemsSnap = await getDocs(pendingItemsQuery);
   for (const itemDoc of pendingItemsSnap.docs) {
+    if (opsInBatch >= BATCH_SIZE_LIMIT) {
+      batch = writeBatch(db);
+      batches.push(batch);
+      opsInBatch = 0;
+    }
     batch.delete(itemDoc.ref);
+    opsInBatch++;
   }
 
   // Delete membership docs for all members
   for (const uid of memberUserIds) {
+    if (opsInBatch >= BATCH_SIZE_LIMIT) {
+      batch = writeBatch(db);
+      batches.push(batch);
+      opsInBatch = 0;
+    }
     const membershipRef = doc(db, "users", uid, "groupMemberships", groupId);
     batch.delete(membershipRef);
+    opsInBatch++;
   }
 
-  await batch.commit();
+  // Commit all batches sequentially
+  for (const b of batches) {
+    await b.commit();
+  }
 }
 
 // ---------------------------------------------------------------------------

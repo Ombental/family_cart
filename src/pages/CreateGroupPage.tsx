@@ -1,10 +1,11 @@
 import { useState, useCallback, type FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Plus } from "lucide-react";
+import { AlertCircle, ArrowLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { createGroup } from "@/lib/firestore-groups";
 
@@ -23,6 +24,7 @@ export function CreateGroupPage() {
   const [groupName, setGroupName] = useState("");
   const [householdName, setHouseholdName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleStep1 = useCallback(
     (e: FormEvent) => {
@@ -38,6 +40,7 @@ export function CreateGroupPage() {
       e.preventDefault();
       if (!user || !householdName.trim()) return;
       setLoading(true);
+      setError(null);
       try {
         const { groupId } = await createGroup({
           groupName: groupName.trim(),
@@ -47,6 +50,7 @@ export function CreateGroupPage() {
         navigate(`/group/${groupId}`, { replace: true });
       } catch (err) {
         console.error("Failed to create group:", err);
+        setError("Failed to create group. Please check your connection and try again.");
         setLoading(false);
       }
     },
@@ -61,6 +65,13 @@ export function CreateGroupPage() {
           Back
         </Link>
       </Button>
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
       {step === 1 && (
         <Card>
