@@ -13,6 +13,28 @@ import { Timestamp } from "firebase/firestore";
 import type { Group, Household } from "@/types/group";
 
 // ---------------------------------------------------------------------------
+// Mock useAuth (HomePage calls useAuth() directly)
+// ---------------------------------------------------------------------------
+vi.mock("@/hooks/useAuth", () => ({
+  useAuth: () => ({
+    user: {
+      id: "household-1",
+      phoneNumber: "555-0100",
+      displayName: "Test Household",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    isAuthenticated: true,
+    isLoading: false,
+    login: vi.fn(),
+    register: vi.fn(),
+    logout: vi.fn(),
+    updateName: vi.fn(),
+  }),
+  AuthProvider: ({ children }: { children: unknown }) => children,
+}));
+
+// ---------------------------------------------------------------------------
 // Mock the household hook
 // ---------------------------------------------------------------------------
 vi.mock("@/hooks/useHousehold", () => ({
