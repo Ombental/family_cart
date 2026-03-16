@@ -15,7 +15,7 @@ Read this document before writing a single line of code. It exists to prevent th
 3. [Repository Structure](#3-repository-structure)
 4. [Data Model](#4-data-model)
 5. [Critical Implementation Rules](#5-critical-implementation-rules)
-6. [Household Identity](#6-household-identity)
+6. [Internationalization (i18n) & RTL](#6-internationalization-i18n--rtl)
 7. [PR/Feature Done Checklist](#7-prfeature-done-checklist)
 8. [Out of Scope — Do Not Build These](#8-out-of-scope--do-not-build-these)
 9. [PR Checklist](#9-pr-checklist)
@@ -59,6 +59,9 @@ familycart/
 ├── src/
 │   ├── components/
 │   ├── hooks/
+│   ├── i18n/
+│   │   ├── LanguageContext.tsx       ← Provider, useLanguage() hook, t() function
+│   │   └── translations.ts          ← All en/he translation strings (~250 keys each)
 │   ├── lib/
 │   │   └── firebase.ts              ← Firebase init + IndexedDB persistence config
 │   └── main.tsx
@@ -282,9 +285,39 @@ Do not rely on the browser's default install prompt. Intercept the `beforeinstal
 
 ---
 
-## 6. Household Identity
+## 6. Internationalization (i18n) & RTL
 
-Household identity is generated dynamically at runtime. When a user enters their household name on the home page, `saveHouseholdIdentity()` creates a UUID via `crypto.randomUUID()` and stores both the ID and name in localStorage. The `useHousehold()` hook reads these values. No env vars or seed scripts are required.
+FamilyCart supports English and Hebrew with full RTL layout. Hebrew is the default language.
+
+### 6.1 Architecture
+
+A lightweight custom i18n system is used instead of i18next to keep the bundle small (~200 unique strings, 2 languages). The API mirrors i18next's `t(key)` pattern, so migration is trivial if needed later.
+
+- **`src/i18n/LanguageContext.tsx`**: `LanguageProvider` wraps the app. Reads/writes `localStorage("familycart_lang")`. Sets `document.documentElement.dir` (`"rtl"` | `"ltr"`) and `document.documentElement.lang` on change.
+- **`src/i18n/translations.ts`**: Single file with flat dot-notation keys. Both `en` and `he` objects side by side.
+- **`useLanguage()` hook**: Returns `{ t, lang, setLang }`. All components use `const { t } = useLanguage()` to access translations.
+
+### 6.2 Rules for New UI Strings
+
+1. **Never hardcode user-visible text.** All strings go through `t("namespace.key")`.
+2. **Add both en and he translations** in `translations.ts` when adding a new key.
+3. **Use `{{param}}` interpolation** for dynamic values: `t("items.qty", { label: "2 kg" })`.
+4. **Unit values are stored as English keys** in Firestore (e.g. `"kg"`, `"pcs"`). Display them via `t("units." + item.unit)`.
+5. **Date formatting** must use locale-aware formatting: `"he-IL"` or `"en-US"` based on current language.
+
+### 6.3 RTL CSS Rules
+
+All layout must be direction-agnostic. Use logical CSS properties:
+
+| Do NOT use | Use instead |
+|---|---|
+| `border-left`, `borderLeftWidth` | `border-inline-start`, `borderInlineStartWidth` |
+| `left-*`, `right-*` (for positioning offsets) | `start-*`, `end-*` |
+| `text-left`, `text-right` | `text-start`, `text-end` |
+| `ml-*`, `mr-*` | `ms-*`, `me-*` |
+| `pl-*`, `pr-*` | `ps-*`, `pe-*` |
+
+Exception: `left-0 right-0` for full-width fixed positioning (e.g. bottom nav) is fine — it's symmetric.
 
 ---
 
@@ -305,7 +338,6 @@ A task is done when all of the following are true:
 
 | Item | Status |
 |---|---|
-| User authentication (login, signup, session management) | Deferred — household identity is handled dynamically via localStorage (see Section 6) |
 | Push notifications | Deferred — US-10 is a UI-only visual flag, no push infrastructure |
 | Analytics event tracking | Deferred |
 | Cost splitting | Deferred |
@@ -327,6 +359,8 @@ Before opening a pull request, confirm all applicable items:
 - [ ] Trip creation sets `startedByHouseholdId` and `startedByHouseholdName`
 - [ ] Invite generation sets `inviteExpiresAt` to now + 48h
 - [ ] Any Cloud Functions in this PR are deployed and verified in the Firebase project, not just committed
+- [ ] New user-visible strings use `t()` with keys in both `en` and `he` translation objects
+- [ ] CSS uses logical properties (no `ml-*`/`mr-*`/`text-left`/`border-left` etc.)
 
 ---
 

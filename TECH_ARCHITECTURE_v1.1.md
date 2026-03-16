@@ -95,15 +95,26 @@ Intercept `beforeinstallprompt` and trigger from a UI button during onboarding. 
 
 ---
 
-## Household Identity
+## Internationalization (i18n)
 
-Users enter a household name in the setup flow. A UUID is generated via `crypto.randomUUID()` and both values persist in localStorage. The `useHousehold()` hook reads them at runtime.
+Custom lightweight i18n (no library). Two languages: English and Hebrew (default).
+
+- **`src/i18n/LanguageContext.tsx`**: `LanguageProvider` with `useLanguage()` hook returning `{ t, lang, setLang }`
+- **`src/i18n/translations.ts`**: Flat dot-notation keys, ~250 keys per language
+- **RTL support**: `document.documentElement.dir` set dynamically. All CSS uses logical properties (`ms-*`/`me-*`, `ps-*`/`pe-*`, `text-start`/`text-end`, `borderInlineStart`)
+- **Language persistence**: `localStorage("familycart_lang")`
+- **Units**: Stored as English keys in Firestore (e.g. `"kg"`), displayed via `t("units." + unit)`
+
+---
+
+## Authentication
+
+Phone-number login (no OTP). User record stored in `/users/{userId}` Firestore collection. 7-day session persisted in localStorage. `useAuth()` hook provides current user context.
 
 ---
 
 ## Out of Scope
 
-- Full authentication system
 - State management library (local component state suffices)
 - Push notifications
 - Analytics / event tracking

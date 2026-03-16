@@ -14,6 +14,7 @@
 4. [Component Specifications](#4-component-specifications)
 5. [Interaction Patterns](#5-interaction-patterns)
 6. [Theming: Main vs Shopper Mode](#6-theming-main-vs-shopper-mode)
+7. [RTL & Bidirectional Layout](#7-rtl--bidirectional-layout)
 
 ---
 
@@ -619,6 +620,34 @@ components read to select the correct color token.
 Components reference `var(--fc-theme-primary)` instead of hardcoded colors,
 making the theme switch automatic when the `.shopper-mode` class is toggled
 on the app root.
+
+---
+
+## 7. RTL & Bidirectional Layout
+
+FamilyCart supports LTR (English) and RTL (Hebrew). The `dir` attribute on `<html>` is set dynamically by `LanguageProvider`.
+
+### 7.1 Logical Properties
+
+All directional CSS must use logical properties so the layout flips automatically:
+
+| Physical (banned) | Logical (required) |
+|---|---|
+| `ml-*`, `mr-*` | `ms-*`, `me-*` |
+| `pl-*`, `pr-*` | `ps-*`, `pe-*` |
+| `left-*`, `right-*` | `start-*`, `end-*` |
+| `text-left`, `text-right` | `text-start`, `text-end` |
+| `borderLeftWidth` | `borderInlineStartWidth` |
+
+### 7.2 Elements That Do Not Flip
+
+- Full-width fixed bars (`left-0 right-0`) — symmetric, no change needed
+- Centered modals (`left-[50%] translate-x-[-50%]`) — symmetric
+- `flex`, `gap-*`, `justify-between` — direction-agnostic
+
+### 7.3 Item Row Color Bar
+
+The 4px household color bar uses `borderInlineStartWidth`/`borderInlineStartColor`, so it appears on the left in LTR and the right in RTL.
 
 ---
 
