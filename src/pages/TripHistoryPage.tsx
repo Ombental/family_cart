@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTripHistory } from "@/hooks/useTripHistory";
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { Trip } from "@/types/trip";
 import type { Timestamp } from "firebase/firestore";
 
@@ -38,12 +39,12 @@ function isYesterday(date: Date): boolean {
   );
 }
 
-function formatTripDate(ts: Timestamp | null): string {
-  if (!ts) return "Unknown date";
+function formatTripDate(ts: Timestamp | null, lang: string, t: (key: string) => string): string {
+  if (!ts) return t("common.unknownDate");
   const date = ts.toDate();
-  if (isToday(date)) return "Today";
-  if (isYesterday(date)) return "Yesterday";
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  if (isToday(date)) return t("trips.today");
+  if (isYesterday(date)) return t("trips.yesterday");
+  return date.toLocaleDateString(lang === "he" ? "he-IL" : "en-US", { month: "short", day: "numeric" });
 }
 
 // ---------------------------------------------------------------------------
@@ -61,6 +62,7 @@ export function TripHistoryPage() {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
   const { trips, loading } = useTripHistory(groupId);
+  const { t, lang } = useLanguage();
 
   const handleBack = useCallback(() => {
     navigate(`/group/${groupId}`);
@@ -91,7 +93,7 @@ export function TripHistoryPage() {
         <div>
           <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
             <ClipboardList className="h-5 w-5" />
-            Trip History
+            {t("trips.history")}
           </h2>
         </div>
       </div>
@@ -100,7 +102,7 @@ export function TripHistoryPage() {
       {trips.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <ShoppingCart className="h-10 w-10 mx-auto mb-3 opacity-50" />
-          <p className="text-sm">No completed trips yet.</p>
+          <p className="text-sm">{t("trips.noTrips")}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -108,6 +110,8 @@ export function TripHistoryPage() {
             <TripCard
               key={trip.id}
               trip={trip}
+              lang={lang}
+              t={t}
               onClick={() => handleTripClick(trip.id)}
             />
           ))}
@@ -123,10 +127,12 @@ export function TripHistoryPage() {
 
 interface TripCardProps {
   trip: Trip;
+  lang: string;
+  t: (key: string, params?: Record<string, string | number>) => string;
   onClick: () => void;
 }
 
-function TripCard({ trip, onClick }: TripCardProps) {
+function TripCard({ trip, lang, t, onClick }: TripCardProps) {
   const itemCount = trip.purchasedItems.length;
 
   return (
@@ -141,14 +147,14 @@ function TripCard({ trip, onClick }: TripCardProps) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 text-sm font-medium">
             <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            {formatTripDate(trip.completedAt)}
+            {formatTripDate(trip.completedAt, lang, t)}
           </div>
           <p className="text-sm text-muted-foreground truncate">
-            Started by {trip.startedByHouseholdName}
+            {t("trips.startedBy", { name: trip.startedByHouseholdName })}
           </p>
           <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
             <Package className="h-3 w-3" />
-            {itemCount} item{itemCount !== 1 ? "s" : ""} purchased
+            {itemCount !== 1 ? t("trips.itemsPurchasedPlural", { count: itemCount }) : t("trips.itemsPurchased", { count: itemCount })}
           </div>
         </div>
         <ChevronRight className="h-4 w-4 text-[#82827c] shrink-0" />

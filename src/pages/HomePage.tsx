@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { subscribeToUserGroups } from "@/lib/firestore-groups";
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { GroupMembership } from "@/types/group";
 
 /**
@@ -16,6 +17,7 @@ import type { GroupMembership } from "@/types/group";
  */
 export function HomePage() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [memberships, setMemberships] = useState<GroupMembership[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,9 +43,9 @@ export function HomePage() {
   return (
     <div className="space-y-8">
       <div className="text-center pt-8">
-        <h2 className="text-3xl font-bold tracking-tight">Welcome to FamilyCart</h2>
+        <h2 className="text-3xl font-bold tracking-tight">{t("home.welcome")}</h2>
         <p className="mt-2 text-muted-foreground">
-          Shared grocery lists for your family.
+          {t("common.tagline")}
         </p>
       </div>
 
@@ -51,7 +53,7 @@ export function HomePage() {
       {memberships.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-            Your Groups
+            {t("home.yourGroups")}
           </h3>
           {memberships.map((m) => (
             <Link key={m.groupId} to={`/group/${m.groupId}`}>
@@ -81,15 +83,14 @@ export function HomePage() {
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center space-y-3">
-                  <h3 className="font-semibold">Start a new group</h3>
+                  <h3 className="font-semibold">{t("home.startNewGroup")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Create a family group and invite other households to share a
-                    grocery list.
+                    {t("home.startNewGroupDesc")}
                   </p>
                   <Button asChild className="w-full gap-2">
                     <Link to="/create">
                       <Plus className="h-4 w-4" />
-                      Create Group
+                      {t("home.createGroup")}
                     </Link>
                   </Button>
                 </div>
@@ -101,21 +102,21 @@ export function HomePage() {
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">or</span>
+                <span className="bg-background px-2 text-muted-foreground">{t("common.or")}</span>
               </div>
             </div>
 
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center space-y-3">
-                  <h3 className="font-semibold">Join an existing group</h3>
+                  <h3 className="font-semibold">{t("home.joinExistingGroup")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Have an invite code? Enter it to join a family group.
+                    {t("home.joinExistingGroupDesc")}
                   </p>
                   <Button asChild variant="outline" className="w-full gap-2">
                     <Link to="/join">
                       <LogIn className="h-4 w-4" />
-                      Join Group
+                      {t("home.joinGroup")}
                     </Link>
                   </Button>
                 </div>
@@ -129,13 +130,13 @@ export function HomePage() {
             <Button asChild variant="outline" className="flex-1 gap-2">
               <Link to="/create">
                 <Plus className="h-4 w-4" />
-                New Group
+                {t("home.newGroup")}
               </Link>
             </Button>
             <Button asChild variant="outline" className="flex-1 gap-2">
               <Link to="/join">
                 <LogIn className="h-4 w-4" />
-                Join Group
+                {t("home.joinGroup")}
               </Link>
             </Button>
           </div>

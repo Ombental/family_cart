@@ -15,6 +15,12 @@ interface DeleteWithUndoParams {
   softDelete: () => Promise<void>;
   /** Undo the soft-delete in Firestore. */
   undoDelete: () => Promise<void>;
+  /** Pre-translated "removed" message (e.g. "Milk removed"). */
+  removedLabel?: string;
+  /** Pre-translated "Undo" button label. */
+  undoLabel?: string;
+  /** Pre-translated error message for undo failure. */
+  undoFailedLabel?: string;
 }
 
 /**
@@ -30,17 +36,20 @@ export async function deleteWithUndo({
   itemName,
   softDelete,
   undoDelete,
+  removedLabel,
+  undoLabel,
+  undoFailedLabel,
 }: DeleteWithUndoParams): Promise<void> {
   await softDelete();
 
-  toast(`${itemName} removed`, {
+  toast(removedLabel ?? `${itemName} removed`, {
     duration: 5000,
     action: {
-      label: "Undo",
+      label: undoLabel ?? "Undo",
       onClick: () => {
         undoDelete().catch((err: unknown) => {
           const message =
-            err instanceof Error ? err.message : "Failed to undo delete.";
+            err instanceof Error ? err.message : (undoFailedLabel ?? "Failed to undo delete.");
           toast.error(message);
         });
       },

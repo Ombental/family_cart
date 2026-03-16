@@ -378,7 +378,7 @@ describe("US-12a: Per-Household Item Breakdown", () => {
     // Find the Milk item row — it should have left border color matching Smith's color #6366f1
     const milkEl = screen.getByText("Milk").closest("div[style]");
     expect(milkEl).toBeTruthy();
-    expect(milkEl!.style.borderLeftColor).toBe("#6366f1");
+    expect(milkEl!.style.borderInlineStartColor).toBe("#6366f1");
   });
 
   it("T-8: handles unknown household gracefully", async () => {

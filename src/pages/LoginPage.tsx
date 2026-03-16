@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 /**
  * Login page.
@@ -14,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { t, lang, setLang } = useLanguage();
 
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,13 +33,20 @@ export function LoginPage() {
       await login(trimmed);
       navigate("/", { replace: true });
     } catch {
-      setError("No account found for this phone number");
+      setError(t("auth.noAccount"));
       setLoading(false);
     }
   }
 
   return (
     <div className="flex min-h-svh items-center justify-center px-4">
+      <button
+        type="button"
+        onClick={() => setLang(lang === "en" ? "he" : "en")}
+        className="absolute top-4 end-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        {lang === "en" ? "עברית" : "English"}
+      </button>
       <div className="w-full max-w-sm space-y-8">
         {/* Logo / Title */}
         <div className="text-center">
@@ -45,10 +54,10 @@ export function LoginPage() {
             className="text-4xl font-bold tracking-tight"
             style={{ color: "var(--fc-primary)" }}
           >
-            FamilyCart
+            {t("common.appName")}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Sign in to your account
+            {t("auth.signIn")}
           </p>
         </div>
 
@@ -57,7 +66,7 @@ export function LoginPage() {
           <div className="space-y-2">
             <Input
               type="tel"
-              placeholder="Phone number"
+              placeholder={t("auth.phonePlaceholder")}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               autoFocus
@@ -75,7 +84,7 @@ export function LoginPage() {
                   className="font-medium underline underline-offset-4"
                   style={{ color: "var(--fc-primary)" }}
                 >
-                  Register instead
+                  {t("auth.registerInstead")}
                 </Link>
               </p>
             </div>
@@ -90,23 +99,23 @@ export function LoginPage() {
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Logging in...
+                {t("auth.loggingIn")}
               </>
             ) : (
-              "Log In"
+              t("auth.logIn")
             )}
           </Button>
         </form>
 
         {/* Register link */}
         <p className="text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
+          {t("auth.dontHaveAccount")}{" "}
           <Link
             to="/register"
             className="font-medium underline underline-offset-4"
             style={{ color: "var(--fc-primary)" }}
           >
-            Register
+            {t("auth.register")}
           </Link>
         </p>
       </div>

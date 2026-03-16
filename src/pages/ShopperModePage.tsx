@@ -12,6 +12,7 @@ import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useGroup } from "@/hooks/useGroup";
 import { useItemCatalog } from "@/hooks/useItemCatalog";
 import { useGroupedItems } from "@/hooks/useGroupedItems";
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { Household } from "@/types/group";
 
 /**
@@ -28,6 +29,7 @@ import type { Household } from "@/types/group";
 export function ShopperModePage() {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { householdId, householdName } = useHouseholdContext(groupId);
   const { isOnline } = useOnlineStatus();
   const { households } = useGroup(groupId);
@@ -110,13 +112,13 @@ export function ShopperModePage() {
           variant="ghost"
           size="icon"
           onClick={handleBack}
-          aria-label="Back to group"
+          aria-label={t("shopper.backToGroup")}
           className="text-white hover:bg-white/20 shrink-0"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h2 className="text-lg font-bold text-white uppercase tracking-wide">
-          Shopper Mode
+          {t("shopper.title")}
         </h2>
       </div>
 
@@ -129,7 +131,7 @@ export function ShopperModePage() {
           />
         </div>
         <p className="text-xs text-[#82827c]">
-          {checkedCount} of {totalItems} items checked
+          {t("shopper.itemsChecked", { checked: checkedCount, total: totalItems })}
         </p>
       </div>
 
@@ -154,8 +156,8 @@ export function ShopperModePage() {
       {totalItems === 0 && (
         <div className="text-center py-10 text-muted-foreground">
           <ShoppingCart className="h-8 w-8 mx-auto mb-3 opacity-50" />
-          <p className="text-sm">No items on the list.</p>
-          <p className="text-xs mt-1">Tap + to add items.</p>
+          <p className="text-sm">{t("shopper.noItems")}</p>
+          <p className="text-xs mt-1">{t("shopper.tapToAdd")}</p>
         </div>
       )}
 
@@ -163,7 +165,7 @@ export function ShopperModePage() {
       {pendingGroups.length > 0 && (
         <div className="pt-4">
           <h3 className="text-xs font-semibold text-[#82827c] uppercase tracking-wide px-4 mb-1">
-            Still needed ({pendingGroups.length} group{pendingGroups.length !== 1 ? "s" : ""})
+            {pendingGroups.length !== 1 ? t("shopper.stillNeededPlural", { count: pendingGroups.length }) : t("shopper.stillNeeded", { count: pendingGroups.length })}
           </h3>
           <div className="space-y-2 px-4">
             {pendingGroups.map((group) => (
@@ -183,7 +185,7 @@ export function ShopperModePage() {
       {boughtGroups.length > 0 && (
         <div className="pt-4">
           <h3 className="text-xs font-semibold text-[#82827c] uppercase tracking-wide px-4 mb-1">
-            In basket ({boughtGroups.length} group{boughtGroups.length !== 1 ? "s" : ""})
+            {boughtGroups.length !== 1 ? t("shopper.inBasketPlural", { count: boughtGroups.length }) : t("shopper.inBasket", { count: boughtGroups.length })}
           </h3>
           <div className="space-y-2 px-4">
             {boughtGroups.map((group) => (
@@ -203,8 +205,8 @@ export function ShopperModePage() {
       <button
         type="button"
         onClick={() => setShowAddForm((v) => !v)}
-        className="fixed bottom-28 right-4 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-[#0d74ce] text-white shadow-lg active:scale-95 transition-transform"
-        aria-label="Add item"
+        className="fixed bottom-28 end-4 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-[#0d74ce] text-white shadow-lg active:scale-95 transition-transform"
+        aria-label={t("items.addItem")}
       >
         <Plus className="h-6 w-6" />
       </button>
@@ -217,14 +219,13 @@ export function ShopperModePage() {
           disabled={completing}
         >
           {completing ? (
-            <Loader2 className="h-5 w-5 animate-spin mr-2" />
+            <Loader2 className="h-5 w-5 animate-spin me-2" />
           ) : null}
-          {completing ? "Finishing..." : "Complete Trip"}
+          {completing ? t("shopper.finishing") : t("shopper.completeTrip")}
         </Button>
         {remainingCount > 0 && (
           <p className="text-xs text-center text-[#82827c]">
-            {remainingCount} item{remainingCount !== 1 ? "s" : ""} still
-            unchecked
+            {remainingCount !== 1 ? t("shopper.uncheckedPlural", { count: remainingCount }) : t("shopper.unchecked", { count: remainingCount })}
           </p>
         )}
       </div>

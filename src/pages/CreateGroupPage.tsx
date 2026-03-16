@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { createGroup } from "@/lib/firestore-groups";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 /**
  * Create Group page — 2-step flow.
@@ -19,6 +20,7 @@ import { createGroup } from "@/lib/firestore-groups";
 export function CreateGroupPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [step, setStep] = useState<1 | 2>(1);
   const [groupName, setGroupName] = useState("");
@@ -50,11 +52,11 @@ export function CreateGroupPage() {
         navigate(`/group/${groupId}`, { replace: true });
       } catch (err) {
         console.error("Failed to create group:", err);
-        setError("Failed to create group. Please check your connection and try again.");
+        setError(t("group.createFailed"));
         setLoading(false);
       }
     },
-    [user, groupName, householdName, navigate]
+    [user, groupName, householdName, navigate, t]
   );
 
   return (
@@ -62,7 +64,7 @@ export function CreateGroupPage() {
       <Button asChild variant="ghost" size="sm" className="gap-2">
         <Link to="/" onClick={(e) => { if (step === 2) { e.preventDefault(); setStep(1); } }}>
           <ArrowLeft className="h-4 w-4" />
-          Back
+          {t("common.back")}
         </Link>
       </Button>
 
@@ -76,19 +78,18 @@ export function CreateGroupPage() {
       {step === 1 && (
         <Card>
           <CardHeader>
-            <CardTitle>Create a Family Group</CardTitle>
+            <CardTitle>{t("group.createTitle")}</CardTitle>
             <CardDescription>
-              Start a new shared grocery list. You can invite other households after
-              creating the group.
+              {t("group.createDesc")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleStep1} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="group-name">Group Name</Label>
+                <Label htmlFor="group-name">{t("group.groupName")}</Label>
                 <Input
                   id="group-name"
-                  placeholder="e.g. The Bental-Smith Family"
+                  placeholder={t("group.groupNamePlaceholder")}
                   value={groupName}
                   onChange={(e) => setGroupName(e.target.value)}
                   maxLength={50}
@@ -97,7 +98,7 @@ export function CreateGroupPage() {
                 />
               </div>
               <Button type="submit" className="w-full" disabled={!groupName.trim()}>
-                Next
+                {t("group.next")}
               </Button>
             </form>
           </CardContent>
@@ -107,19 +108,18 @@ export function CreateGroupPage() {
       {step === 2 && (
         <Card>
           <CardHeader>
-            <CardTitle>Name Your Household</CardTitle>
+            <CardTitle>{t("group.nameHousehold")}</CardTitle>
             <CardDescription>
-              What should your household be called in "{groupName.trim()}"?
-              Other members will see this name.
+              {t("group.nameHouseholdDesc", { groupName: groupName.trim() })}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleStep2} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="household-name">Household Name</Label>
+                <Label htmlFor="household-name">{t("group.householdName")}</Label>
                 <Input
                   id="household-name"
-                  placeholder="e.g. The Smiths"
+                  placeholder={t("group.householdNamePlaceholder")}
                   value={householdName}
                   onChange={(e) => setHouseholdName(e.target.value)}
                   maxLength={50}
@@ -133,7 +133,7 @@ export function CreateGroupPage() {
                 disabled={loading || !householdName.trim()}
               >
                 <Plus className="h-4 w-4" />
-                {loading ? "Creating..." : "Create Group"}
+                {loading ? t("group.creating") : t("group.createGroupButton")}
               </Button>
             </form>
           </CardContent>

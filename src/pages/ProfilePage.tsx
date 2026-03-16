@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 /**
  * Profile page — displays the current user's phone number (read-only)
@@ -14,6 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 export function ProfilePage() {
   const { user, updateName, logout } = useAuth();
   const navigate = useNavigate();
+  const { t, lang, setLang } = useLanguage();
 
   const [isEditing, setIsEditing] = useState(false);
   const [nameInput, setNameInput] = useState("");
@@ -43,9 +45,9 @@ export function ProfilePage() {
       await updateName(trimmed);
       setIsEditing(false);
       setNameInput("");
-      toast.success("Name updated");
+      toast.success(t("profile.nameUpdated"));
     } catch {
-      toast.error("Failed to update name");
+      toast.error(t("profile.nameUpdateFailed"));
     } finally {
       setIsSaving(false);
     }
@@ -59,7 +61,7 @@ export function ProfilePage() {
   if (!user) {
     return (
       <div className="text-center py-20">
-        <p className="text-muted-foreground">Not logged in.</p>
+        <p className="text-muted-foreground">{t("auth.notLoggedIn")}</p>
       </div>
     );
   }
@@ -67,7 +69,7 @@ export function ProfilePage() {
   return (
     <div className="space-y-6">
       <div className="pt-6">
-        <h2 className="text-2xl font-bold tracking-tight">Profile</h2>
+        <h2 className="text-2xl font-bold tracking-tight">{t("profile.title")}</h2>
       </div>
 
       <Card>
@@ -76,7 +78,7 @@ export function ProfilePage() {
           <div className="space-y-1">
             <label className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               <Phone className="h-3 w-3" />
-              Phone number
+              {t("profile.phoneNumber")}
             </label>
             <p className="text-sm" style={{ color: "var(--fc-text-primary)" }}>
               {user.phoneNumber}
@@ -87,7 +89,7 @@ export function ProfilePage() {
           <div className="space-y-1">
             <label className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               <User className="h-3 w-3" />
-              Display name
+              {t("profile.displayName")}
             </label>
 
             {isEditing ? (
@@ -103,7 +105,7 @@ export function ProfilePage() {
                   type="submit"
                   size="icon-sm"
                   disabled={isSaving || !nameInput.trim()}
-                  aria-label="Save name"
+                  aria-label={t("profile.saveName")}
                 >
                   <Check className="h-4 w-4" />
                 </Button>
@@ -113,7 +115,7 @@ export function ProfilePage() {
                   size="icon-sm"
                   onClick={cancelEditing}
                   disabled={isSaving}
-                  aria-label="Cancel editing"
+                  aria-label={t("profile.cancelEditing")}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -130,12 +132,37 @@ export function ProfilePage() {
                   variant="ghost"
                   size="icon-sm"
                   onClick={startEditing}
-                  aria-label="Edit name"
+                  aria-label={t("profile.editName")}
                 >
                   <Pencil className="h-3.5 w-3.5" />
                 </Button>
               </div>
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Language toggle */}
+      <Card>
+        <CardContent className="pt-6 space-y-3">
+          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            {t("profile.language")}
+          </label>
+          <div className="flex gap-2">
+            <Button
+              variant={lang === "en" ? "default" : "outline"}
+              className="flex-1"
+              onClick={() => setLang("en")}
+            >
+              English
+            </Button>
+            <Button
+              variant={lang === "he" ? "default" : "outline"}
+              className="flex-1"
+              onClick={() => setLang("he")}
+            >
+              עברית
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -147,7 +174,7 @@ export function ProfilePage() {
         onClick={handleLogout}
       >
         <LogOut className="h-4 w-4" />
-        Log out
+        {t("profile.logOut")}
       </Button>
     </div>
   );
