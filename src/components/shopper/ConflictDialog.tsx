@@ -1,4 +1,5 @@
 import { CircleAlert } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,23 +27,22 @@ export function ConflictDialog({
   onOpenChange,
   shopperHouseholdName,
 }: ConflictDialogProps) {
+  const { t } = useLanguage();
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <CircleAlert className="h-5 w-5 text-orange-500" />
-            Trip Already Active
+            {t("conflict.title")}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            {shopperHouseholdName} is already on a shopping trip. Only one
-            shopping trip can be active at a time. Please wait for them to
-            finish.
+            {t("conflict.desc", { name: shopperHouseholdName })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogAction onClick={() => onOpenChange(false)}>
-            Got it
+            {t("common.gotIt")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
