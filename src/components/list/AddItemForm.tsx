@@ -185,15 +185,15 @@ function AddItemSheet({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4" aria-label="Add item">
+        <form onSubmit={handleSubmit} className="space-y-4" aria-label={t("items.addItem")}>
           {/* Name field */}
           <div className="space-y-1.5">
             <Label htmlFor="add-item-name" className="text-[13px] font-medium text-[#4a4a4a]">
-              Item name
+              {t("items.itemName")}
             </Label>
             <ItemCombobox
               id="add-item-name"
-              placeholder="e.g. Milk, Eggs, Bread..."
+              placeholder={t("items.itemNamePlaceholder")}
               value={name}
               onChange={setName}
               onSelect={(suggestion) => {
@@ -213,7 +213,7 @@ function AddItemSheet({
           <div className="flex gap-3">
             <div className="w-24 space-y-1.5">
               <Label htmlFor="add-item-qty" className="text-[13px] font-medium text-[#4a4a4a]">
-                Quantity
+                {t("items.quantity")}
               </Label>
               <Input
                 id="add-item-qty"
@@ -228,7 +228,7 @@ function AddItemSheet({
             </div>
             <div className="flex-1 space-y-1.5">
               <Label htmlFor="add-item-unit" className="text-[13px] font-medium text-[#4a4a4a]">
-                Unit
+                {t("items.unit")}
               </Label>
               <select
                 id="add-item-unit"
