@@ -14,6 +14,8 @@ import { useGroup } from "@/hooks/useGroup";
 import { useItemCatalog } from "@/hooks/useItemCatalog";
 import { useDepartmentCatalog } from "@/hooks/useDepartmentCatalog";
 import { useGroupedItems } from "@/hooks/useGroupedItems";
+import { useStores } from "@/hooks/useStores";
+import { TripCompletionForm } from "@/components/shopper/TripCompletionForm";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { Household } from "@/types/group";
 import type { ItemGroup } from "@/types/item-group";
@@ -50,10 +52,12 @@ export function ShopperModePage() {
     toggleItemStatus,
   } = useItems(groupId, householdId);
 
+  const { stores, addStore } = useStores(groupId);
   const { suggestions } = useItemCatalog(groupId, items);
   const departmentSuggestions = useDepartmentCatalog(items);
 
   const [completing, setCompleting] = useState(false);
+  const [showCompletionForm, setShowCompletionForm] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [sortBy, setSortBy] = useState<"alphabetical" | "department">(() => {
     const stored = localStorage.getItem("shopper-sort");
@@ -67,12 +71,16 @@ export function ShopperModePage() {
 
   const { pendingGroups, boughtGroups } = useGroupedItems(items, householdMap, sortBy);
 
-  const handleCompleteTrip = useCallback(async () => {
+  const userId = user?.id ?? "";
+  const handleCompleteTrip = useCallback(async (data: { storeName: string; totalAmount: number }) => {
     setCompleting(true);
-    // Save trip ID before completing -- completeTrip does not return it
     const savedTripId = activeTrip?.id;
     try {
-      await completeTrip();
+      await completeTrip({
+        storeName: data.storeName,
+        totalAmount: data.totalAmount,
+        completedByUserId: userId,
+      });
       if (savedTripId) {
         navigate(`/group/${groupId}/trip/${savedTripId}`, { replace: true });
       } else {
@@ -82,7 +90,7 @@ export function ShopperModePage() {
       console.error("Failed to complete trip:", err);
       setCompleting(false);
     }
-  }, [completeTrip, navigate, groupId, activeTrip?.id]);
+  }, [completeTrip, navigate, groupId, activeTrip?.id, userId]);
 
   const handleToggle = useCallback(
     async (itemId: string) => {
@@ -251,11 +259,23 @@ export function ShopperModePage() {
         <Plus className="h-6 w-6" />
       </button>
 
+      {/* ---- Completion form overlay ---- */}
+      {showCompletionForm && (
+        <TripCompletionForm
+          stores={stores}
+          onAddStore={addStore}
+          onSubmit={handleCompleteTrip}
+          onCancel={() => setShowCompletionForm(false)}
+          submitting={completing}
+          mode="complete"
+        />
+      )}
+
       {/* ---- Bottom bar: Complete Trip + helper text ---- */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#f0f0f0] px-4 py-3 space-y-1.5 z-10">
         <Button
           className="w-full rounded-xl bg-[#3e332e] text-white hover:bg-[#3e332e]/90 h-12 text-base font-semibold"
-          onClick={handleCompleteTrip}
+          onClick={() => setShowCompletionForm(true)}
           disabled={completing}
         >
           {completing ? (

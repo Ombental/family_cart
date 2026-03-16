@@ -46,6 +46,19 @@ vi.mock("@/hooks/useGroup", () => ({
   useGroup: (...args: unknown[]) => mockUseGroup(...args),
 }));
 
+vi.mock("@/hooks/useAuth", () => ({
+  useAuth: () => ({ user: { id: "user-1", displayName: "Test User" }, isAuthenticated: true, isLoading: false }),
+}));
+
+vi.mock("@/hooks/useStores", () => ({
+  useStores: () => ({ stores: [], loading: false, addStore: vi.fn() }),
+}));
+
+vi.mock("@/lib/firestore-trips", async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
+  return { ...actual, updateTripMetadata: vi.fn() };
+});
+
 // ---------------------------------------------------------------------------
 // Import components after mocks
 // ---------------------------------------------------------------------------

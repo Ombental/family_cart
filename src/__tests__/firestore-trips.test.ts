@@ -240,12 +240,15 @@ describe("completeTrip", () => {
     await completeTrip({
       groupId: "group-abc",
       tripId: "trip-123",
+      storeName: "Test Store",
+      totalAmount: 100,
+      completedByUserId: "user-1",
     });
 
     // Verify writeBatch was called
     expect(mockWriteBatch).toHaveBeenCalledWith({ _mockDb: true });
 
-    // Verify the trip doc was updated with purchasedItems and status
+    // Verify the trip doc was updated with purchasedItems, status, and metadata
     expect(mockBatch.update).toHaveBeenCalledWith("mock-doc-ref", {
       status: "complete",
       completedAt: { _type: "serverTimestamp" },
@@ -253,6 +256,9 @@ describe("completeTrip", () => {
         { name: "Milk", qty: 2, unit: "gallons", department: "Dairy", householdId: "household-1" },
         { name: "Bread", qty: 1, unit: "loaf", department: "Bakery", householdId: "household-2" },
       ],
+      storeName: "Test Store",
+      totalAmount: 100,
+      completedByUserId: "user-1",
     });
 
     // Verify bought items were batch-deleted
@@ -287,6 +293,9 @@ describe("completeTrip", () => {
     await completeTrip({
       groupId: "group-abc",
       tripId: "trip-123",
+      storeName: "Test Store",
+      totalAmount: 50,
+      completedByUserId: "user-1",
     });
 
     // Only the single bought item should be batch-deleted
@@ -313,13 +322,19 @@ describe("completeTrip", () => {
     await completeTrip({
       groupId: "group-abc",
       tripId: "trip-123",
+      storeName: "Test Store",
+      totalAmount: 0,
+      completedByUserId: "user-1",
     });
 
-    // purchasedItems should be empty array
+    // purchasedItems should be empty array, metadata should be present
     expect(mockBatch.update).toHaveBeenCalledWith(
       "mock-doc-ref",
       expect.objectContaining({
         purchasedItems: [],
+        storeName: "Test Store",
+        totalAmount: 0,
+        completedByUserId: "user-1",
       })
     );
 

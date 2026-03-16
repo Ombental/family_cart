@@ -45,4 +45,7 @@ export interface Trip {
   startedByHouseholdName: string;
   startedByUserName?: string;
   purchasedItems: PurchasedItemSnapshot[];
+  storeName?: string;
+  totalAmount?: number;
+  completedByUserId?: string;
 }

@@ -145,6 +145,9 @@ function TripCard({ trip, lang, t, onClick }: TripCardProps) {
           <ShoppingCart className="h-5 w-5 text-[#30a46c]" />
         </div>
         <div className="min-w-0 flex-1">
+          {trip.storeName && (
+            <span className="text-sm font-semibold text-[#1a1a1a]">{trip.storeName}</span>
+          )}
           <div className="flex items-center gap-2 text-sm font-medium">
             <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             {formatTripDate(trip.completedAt, lang, t)}
@@ -157,6 +160,9 @@ function TripCard({ trip, lang, t, onClick }: TripCardProps) {
             {itemCount !== 1 ? t("trips.itemsPurchasedPlural", { count: itemCount }) : t("trips.itemsPurchased", { count: itemCount })}
           </div>
         </div>
+        {trip.totalAmount != null && (
+          <span className="text-base font-bold text-[#1a1a1a] shrink-0">{trip.totalAmount.toFixed(2)}</span>
+        )}
         <ChevronRight className="h-4 w-4 text-[#82827c] shrink-0" />
       </CardContent>
     </Card>
