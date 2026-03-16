@@ -70,11 +70,6 @@ Three households are shown in wireframes. Colors are assigned round-robin.
 
 Pattern: For household at index `n`, use Radix scale `SCALES[n % 8]`.
 Each scale provides: step-9 for dot/bar, step-3 for tag bg, step-7 for tag border, step-11 for tag text.
-
-**IMPORTANT:** The current `src/lib/colors.ts` uses a flat hex array. It must be
-refactored to export a structured object per household slot with `dot`, `tagBg`,
-`tagBorder`, and `tagText` fields.
-
 ### 1.4 Semantic Colors
 
 | Token              | Radix Ref    | Hex       | Usage                                    |
@@ -722,7 +717,7 @@ colors: {
 
 ## Appendix C: Household Color System (Structured)
 
-Replace the flat array in `src/lib/colors.ts` with:
+The flat array in `src/lib/colors.ts` was replaced with the structured `HouseholdColorSet` interface below.
 
 ```ts
 export interface HouseholdColorSet {

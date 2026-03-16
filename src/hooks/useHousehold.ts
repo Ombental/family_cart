@@ -1,36 +1,68 @@
 /**
  * Household identity hook.
  *
- * Identity is persisted in localStorage (UUID + display name).
- * First-time users complete setup on the Home page before this hook is called.
+ * Reads identity from the authenticated user via useAuth().
+ * The user's `id` becomes the `householdId`, and `displayName` becomes `householdName`.
+ *
+ * This is a thin wrapper that preserves backward compatibility -- all existing
+ * components that call `useHousehold()` continue to work without individual changes.
  */
 
-const LS_ID_KEY = "familycart_household_id";
-const LS_NAME_KEY = "familycart_household_name";
+import { useAuth } from "@/hooks/useAuth";
+import { getSession } from "@/lib/session";
 
 export interface HouseholdIdentity {
   householdId: string;
   householdName: string;
 }
 
+/**
+ * @deprecated Use `useAuth()` directly instead.
+ *
+ * Returns the household identity from the current auth session (localStorage).
+ * Falls back to null if no session exists.
+ */
 export function getStoredHouseholdIdentity(): HouseholdIdentity | null {
-  const id = localStorage.getItem(LS_ID_KEY);
-  const name = localStorage.getItem(LS_NAME_KEY);
-  if (!id || !name) return null;
-  return { householdId: id, householdName: name };
+  const session = getSession();
+  if (!session) return null;
+  return {
+    householdId: session.userId,
+    householdName: session.displayName,
+  };
 }
 
-export function saveHouseholdIdentity(name: string): HouseholdIdentity {
-  const id = crypto.randomUUID();
-  localStorage.setItem(LS_ID_KEY, id);
-  localStorage.setItem(LS_NAME_KEY, name);
-  return { householdId: id, householdName: name };
-}
-
-export function useHousehold(): HouseholdIdentity {
-  const identity = getStoredHouseholdIdentity();
-  if (!identity) {
-    throw new Error("No household identity found. Complete setup on Home page.");
+/**
+ * @deprecated Identity is now managed by the auth system (register/login).
+ * This function is a no-op that returns the current session identity.
+ * It no longer writes to localStorage or generates UUIDs.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function saveHouseholdIdentity(_name: string): HouseholdIdentity {
+  const session = getSession();
+  if (!session) {
+    throw new Error(
+      "saveHouseholdIdentity is deprecated. Use auth register/login instead.",
+    );
   }
-  return identity;
+  return {
+    householdId: session.userId,
+    householdName: session.displayName,
+  };
+}
+
+/**
+ * Hook that returns the current household identity derived from the
+ * authenticated user. Must be called within an AuthProvider.
+ *
+ * The user's `id` maps to `householdId` and `displayName` maps to `householdName`.
+ */
+export function useHousehold(): HouseholdIdentity {
+  const { user } = useAuth();
+  if (!user) {
+    throw new Error("useHousehold requires an authenticated user");
+  }
+  return {
+    householdId: user.id,
+    householdName: user.displayName,
+  };
 }

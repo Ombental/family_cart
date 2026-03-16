@@ -1,45 +1,31 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Plus, LogIn, Loader2, ArrowRight } from "lucide-react";
+import { Plus, LogIn, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  getStoredHouseholdIdentity,
-  saveHouseholdIdentity,
-  type HouseholdIdentity,
-} from "@/hooks/useHousehold";
+import { useAuth } from "@/hooks/useAuth";
 import { findGroupByHousehold } from "@/lib/firestore-groups";
 
 /**
  * Home / Landing page.
- * New users enter their household name inline before being shown Create/Join options.
- * Returning users with stored identity go straight to the group membership check.
+ *
+ * The user is guaranteed to be authenticated (behind RequireAuth).
+ * On mount, checks if the user already belongs to a group and redirects if so.
+ * Otherwise shows Create/Join options.
  */
 export function HomePage() {
-  const [identity, setIdentity] = useState<HouseholdIdentity | null>(
-    getStoredHouseholdIdentity
-  );
-  const [nameInput, setNameInput] = useState("");
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [checking, setChecking] = useState(!!identity);
-
-  function handleSetupSubmit(e: FormEvent) {
-    e.preventDefault();
-    const trimmed = nameInput.trim();
-    if (!trimmed) return;
-    setIdentity(saveHouseholdIdentity(trimmed));
-    setChecking(true);
-  }
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    if (!identity) return;
+    if (!user) return;
 
     let cancelled = false;
 
     async function check() {
       try {
-        const groupId = await findGroupByHousehold(identity!.householdId);
+        const groupId = await findGroupByHousehold(user!.id);
         if (!cancelled && groupId) {
           navigate(`/group/${groupId}`, { replace: true });
           return;
@@ -54,42 +40,7 @@ export function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, [identity, navigate]);
-
-  if (!identity) {
-    return (
-      <div className="space-y-8">
-        <div className="text-center pt-8">
-          <h2 className="text-3xl font-bold tracking-tight">Welcome to FamilyCart</h2>
-          <p className="mt-2 text-muted-foreground">
-            Shared grocery lists for your family.
-          </p>
-        </div>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-3">
-              <h3 className="font-semibold text-center">What's your household name?</h3>
-              <p className="text-sm text-muted-foreground text-center">
-                This name identifies your household to other group members.
-              </p>
-              <form onSubmit={handleSetupSubmit} className="flex gap-2">
-                <Input
-                  placeholder="e.g. Smith Family"
-                  value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
-                  autoFocus
-                />
-                <Button type="submit" disabled={!nameInput.trim()} size="icon">
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </form>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  }, [user, navigate]);
 
   if (checking) {
     return (

@@ -37,8 +37,8 @@ export function BottomNav() {
     {
       label: "Profile",
       icon: User,
-      path: null, // Disabled for pilot
-      match: () => false,
+      path: "/profile",
+      match: (p: string) => p === "/profile",
     },
   ];
 
