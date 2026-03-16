@@ -7,12 +7,14 @@
 
 const SESSION_KEY = "familycart_session";
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const SESSION_VERSION = import.meta.env.VITE_SESSION_VERSION ?? "1";
 
 export interface Session {
   userId: string;
   phoneNumber: string;
   displayName: string;
   loginAt: number; // Date.now()
+  version?: string;
 }
 
 /** Persist a new session to localStorage. */
@@ -26,6 +28,7 @@ export function saveSession(
     phoneNumber,
     displayName,
     loginAt: Date.now(),
+    version: SESSION_VERSION,
   };
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
 }
@@ -37,8 +40,12 @@ export function getSession(): Session | null {
 
   try {
     const session: Session = JSON.parse(raw);
+    if (session.version !== SESSION_VERSION) {
+      clearSession();
+      return null;
+    }
     if (session.loginAt + SESSION_TTL_MS < Date.now()) {
-      localStorage.removeItem(SESSION_KEY);
+      clearSession();
       return null;
     }
     return session;
