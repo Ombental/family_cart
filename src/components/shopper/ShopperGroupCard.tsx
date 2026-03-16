@@ -1,3 +1,4 @@
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { ItemGroup } from "@/types/item-group";
 import type { Household } from "@/types/group";
 import { ShopperSubRow } from "./ShopperSubRow";
@@ -21,6 +22,7 @@ export function ShopperGroupCard({
   activeTripId,
   onToggle,
 }: ShopperGroupCardProps) {
+  const { t } = useLanguage();
   const showProgress = group.boughtCount > 0 && !group.allBought;
 
   return (
@@ -32,10 +34,10 @@ export function ShopperGroupCard({
         </span>
         <div className="flex items-center gap-2 shrink-0 text-xs text-[#82827c]">
           {showProgress && (
-            <span>{group.boughtCount} of {group.items.length} done</span>
+            <span>{t("shopper.done", { bought: group.boughtCount, total: group.items.length })}</span>
           )}
           <span>
-            {group.householdCount} household{group.householdCount !== 1 ? "s" : ""}
+            {group.householdCount !== 1 ? t("common.householdsPlural", { count: group.householdCount }) : t("common.households", { count: group.householdCount })}
           </span>
         </div>
       </div>
