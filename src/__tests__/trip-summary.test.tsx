@@ -128,7 +128,7 @@ describe("US-12: TripHistoryPage", () => {
         id: "trip-1",
         startedByHouseholdName: "Smith Family",
         purchasedItems: [
-          { name: "Milk", qty: 2, unit: "gallons", householdId: "household-1" },
+          { name: "Milk", qty: 2, unit: "L", householdId: "household-1" },
           { name: "Bread", qty: 1, unit: "loaf", householdId: "household-2" },
         ],
       }),
@@ -191,9 +191,9 @@ describe("US-12: TripSummaryPage", () => {
       id: "trip-1",
       startedByHouseholdName: "Smith Family",
       purchasedItems: [
-        { name: "Milk", qty: 2, unit: "gallons", householdId: "household-1" },
-        { name: "Cheese", qty: 1, unit: "block", householdId: "household-1" },
-        { name: "Bread", qty: 3, unit: "loaves", householdId: "household-2" },
+        { name: "Milk", qty: 2, unit: "L", householdId: "household-1" },
+        { name: "Cheese", qty: 1, unit: "box", householdId: "household-1" },
+        { name: "Bread", qty: 3, unit: "loaf", householdId: "household-2" },
       ],
     });
 
@@ -275,9 +275,9 @@ describe("US-12a: Per-Household Item Breakdown", () => {
       id: "trip-1",
       startedByHouseholdName: "Smith Family",
       purchasedItems: [
-        { name: "Milk", qty: 2, unit: "gallons", householdId: "household-1" },
-        { name: "Cheese", qty: 1, unit: "block", householdId: "household-1" },
-        { name: "Bread", qty: 3, unit: "loaves", householdId: "household-2" },
+        { name: "Milk", qty: 2, unit: "L", householdId: "household-1" },
+        { name: "Cheese", qty: 1, unit: "box", householdId: "household-1" },
+        { name: "Bread", qty: 3, unit: "loaf", householdId: "household-2" },
       ],
     });
 
@@ -364,8 +364,8 @@ describe("US-12a: Per-Household Item Breakdown", () => {
     await user.click(screen.getByText("Smith Family"));
 
     expect(screen.getByText("Milk")).toBeInTheDocument();
-    expect(screen.getByText("Qty: 2 · gallons")).toBeInTheDocument();
-    expect(screen.getByText("Qty: 1 · block")).toBeInTheDocument();
+    expect(screen.getByText("Qty: 2 · L")).toBeInTheDocument();
+    expect(screen.getByText("Qty: 1 · box")).toBeInTheDocument();
   });
 
   it("T-7: shows color bar with household color", async () => {

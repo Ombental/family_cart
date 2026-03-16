@@ -562,7 +562,7 @@ describe("US-13: ShopperGroupCard", () => {
 
   it("sub-rows show checkbox, pill, household name, and qty/unit", () => {
     const items = [
-      buildItem({ id: "1", name: "Milk", qty: 2, unit: "gallons", householdId: "household-1" }),
+      buildItem({ id: "1", name: "Milk", qty: 2, unit: "L", householdId: "household-1" }),
     ];
     const { result } = renderHook(() => useGroupedItems(items, householdMap));
     const group = result.current.pendingGroups[0];
@@ -581,7 +581,7 @@ describe("US-13: ShopperGroupCard", () => {
     // Short code pill
     expect(screen.getByText("SM")).toBeInTheDocument();
     // Qty/unit
-    expect(screen.getByText("2 gallons")).toBeInTheDocument();
+    expect(screen.getByText("2 L")).toBeInTheDocument();
     // Checkbox button
     expect(screen.getByRole("button", { name: /check off milk for smith family/i })).toBeInTheDocument();
   });
