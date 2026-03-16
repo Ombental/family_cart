@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { subscribeToUserGroups } from "@/lib/firestore-groups";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { GroupMembership } from "@/types/group";
+import { NotificationPrompt } from "@/components/notifications/NotificationPrompt";
 
 /**
  * Home page — shows the user's group memberships.
@@ -75,6 +76,9 @@ export function HomePage() {
           ))}
         </div>
       )}
+
+      {/* Notification opt-in prompt */}
+      <NotificationPrompt />
 
       {/* Create / Join options */}
       <div className="space-y-4">
