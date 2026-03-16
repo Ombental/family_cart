@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "type": "stdio",
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "--mount",
+        "type=bind,src=/home/omer-bental/Desktop/Coding/personal-projects/family_cart,dst=/projects/Desktop/Coding/personal-projects/family_cart",
+        "mcp/filesystem",
+        "/projects"
+      ],
+      "env": {}
+    }
+  }
+}

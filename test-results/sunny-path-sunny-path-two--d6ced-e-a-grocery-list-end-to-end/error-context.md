@@ -1,0 +1,104 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - heading "FamilyCart" [level=1] [ref=e6]
+    - main [ref=e7]:
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - generic [ref=e10]:
+            - heading "Sunday Shoppers" [level=2] [ref=e11]
+            - paragraph [ref=e12]: 2 households
+          - button "Group settings" [ref=e13]:
+            - img
+        - generic [ref=e14]:
+          - button "Members" [ref=e15]:
+            - img
+            - text: Members
+          - button "Trip History" [ref=e16]:
+            - img
+            - text: Trip History
+        - button "Start Shopping" [ref=e18]:
+          - img
+          - text: Start Shopping
+        - generic [ref=e19]:
+          - generic [ref=e20]:
+            - generic [ref=e21]: Current Shopping List
+            - paragraph [ref=e22]: 4 items total
+          - generic [ref=e23]:
+            - generic [ref=e24]:
+              - generic [ref=e27]: Smith Family
+              - generic [ref=e28]: 2 items
+            - generic [ref=e29]:
+              - generic [ref=e32]: Johnson Family
+              - generic [ref=e33]: 2 items
+        - generic [ref=e36]:
+          - generic [ref=e37]:
+            - button "All" [ref=e38]
+            - button "Smith Family" [ref=e39]
+            - button "Johnson Family" [ref=e40]
+          - paragraph [ref=e41]: 4 items
+          - generic [ref=e42]:
+            - 'button "Whole Milk Qty: 2 L · Smith Family Smith Family Edit item Delete item" [ref=e43] [cursor=pointer]':
+              - generic [ref=e44]:
+                - generic [ref=e45]: Whole Milk
+                - generic [ref=e46]: "Qty: 2 L · Smith Family"
+              - generic [ref=e47]: Smith Family
+              - generic [ref=e50]:
+                - button "Edit item" [ref=e51]:
+                  - img
+                - button "Delete item" [ref=e52]:
+                  - img
+            - 'button "Free Range Eggs Qty: 1 dozen · Smith Family Smith Family Edit item Delete item" [ref=e53] [cursor=pointer]':
+              - generic [ref=e54]:
+                - generic [ref=e55]: Free Range Eggs
+                - generic [ref=e56]: "Qty: 1 dozen · Smith Family"
+              - generic [ref=e57]: Smith Family
+              - generic [ref=e60]:
+                - button "Edit item" [ref=e61]:
+                  - img
+                - button "Delete item" [ref=e62]:
+                  - img
+            - 'button "Olive Oil Qty: 1 bottle · Johnson Family Johnson Family" [ref=e63] [cursor=pointer]':
+              - generic [ref=e64]:
+                - generic [ref=e65]: Olive Oil
+                - generic [ref=e66]: "Qty: 1 bottle · Johnson Family"
+              - generic [ref=e67]: Johnson Family
+            - 'button "Pasta Qty: 2 pack · Johnson Family Johnson Family" [ref=e69] [cursor=pointer]':
+              - generic [ref=e70]:
+                - generic [ref=e71]: Pasta
+                - generic [ref=e72]: "Qty: 2 pack · Johnson Family"
+              - generic [ref=e73]: Johnson Family
+        - button "Add item" [ref=e75]:
+          - img [ref=e76]
+        - generic [ref=e77]:
+          - heading "Invite more households" [level=3] [ref=e78]
+          - generic [ref=e80]:
+            - generic [ref=e81]:
+              - paragraph [ref=e82]: Invite Code
+              - paragraph [ref=e83]: BA7Z7S
+            - generic [ref=e84]:
+              - button "Copy code" [ref=e85]:
+                - img
+                - text: Copy code
+              - button "New code" [ref=e86]:
+                - img
+                - text: New code
+    - navigation [ref=e87]:
+      - button "Home" [ref=e88]:
+        - img [ref=e89]
+        - generic [ref=e92]: Home
+      - button "List" [ref=e93]:
+        - img [ref=e94]
+        - generic [ref=e97]: List
+      - button "Profile" [disabled] [ref=e98]:
+        - img [ref=e99]
+        - generic [ref=e102]: Profile
+  - region "Notifications alt+T":
+    - list:
+      - listitem [ref=e103]:
+        - generic [ref=e105]: Rye Bread removed
+        - button "Undo" [ref=e106] [cursor=pointer]
+```

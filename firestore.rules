@@ -1,0 +1,26 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Groups: readable and writable by anyone (pilot — no auth)
+    match /groups/{groupId} {
+      allow read, write: if true;
+
+      // Households subcollection
+      match /households/{householdId} {
+        allow read, write: if true;
+      }
+
+      // Items subcollection
+      match /items/{itemId} {
+        allow read, write: if true;
+      }
+
+      // Trips subcollection
+      match /trips/{tripId} {
+        allow read, write: if true;
+      }
+    }
+  }
+}
