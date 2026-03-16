@@ -1,3 +1,5 @@
+export const MAX_HOUSEHOLD_COLORS = 8;
+
 /**
  * Structured color set for each household. Used for dots, tags, and pills.
  */

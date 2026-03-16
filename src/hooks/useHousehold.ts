@@ -1,68 +1,82 @@
 /**
- * Household identity hook.
+ * Household context hook.
  *
- * Reads identity from the authenticated user via useAuth().
- * The user's `id` becomes the `householdId`, and `displayName` becomes `householdName`.
+ * Replaces the old thin wrapper (userId === householdId) with a real
+ * lookup against /users/{userId}/groupMemberships/{groupId}.
  *
- * This is a thin wrapper that preserves backward compatibility -- all existing
- * components that call `useHousehold()` continue to work without individual changes.
+ * Returns the user's householdId, householdName, and householdColor
+ * for the given group, with real-time updates via onSnapshot.
  */
 
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { getSession } from "@/lib/session";
+import { subscribeToUserMembership } from "@/lib/firestore-groups";
+import { subscribeToHouseholds } from "@/lib/firestore-groups";
+import type { GroupMembership, Household } from "@/types/group";
 
-export interface HouseholdIdentity {
+export interface HouseholdContext {
   householdId: string;
   householdName: string;
+  householdColor: string;
+  loading: boolean;
 }
 
 /**
- * @deprecated Use `useAuth()` directly instead.
+ * Get the current user's household context for a given group.
  *
- * Returns the household identity from the current auth session (localStorage).
- * Falls back to null if no session exists.
+ * Subscribes to the membership doc and resolves the household color
+ * from the households subcollection.
  */
-export function getStoredHouseholdIdentity(): HouseholdIdentity | null {
-  const session = getSession();
-  if (!session) return null;
-  return {
-    householdId: session.userId,
-    householdName: session.displayName,
-  };
-}
-
-/**
- * @deprecated Identity is now managed by the auth system (register/login).
- * This function is a no-op that returns the current session identity.
- * It no longer writes to localStorage or generates UUIDs.
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function saveHouseholdIdentity(_name: string): HouseholdIdentity {
-  const session = getSession();
-  if (!session) {
-    throw new Error(
-      "saveHouseholdIdentity is deprecated. Use auth register/login instead.",
-    );
-  }
-  return {
-    householdId: session.userId,
-    householdName: session.displayName,
-  };
-}
-
-/**
- * Hook that returns the current household identity derived from the
- * authenticated user. Must be called within an AuthProvider.
- *
- * The user's `id` maps to `householdId` and `displayName` maps to `householdName`.
- */
-export function useHousehold(): HouseholdIdentity {
+export function useHouseholdContext(
+  groupId: string | undefined
+): HouseholdContext & { membership: GroupMembership | null } {
   const { user } = useAuth();
-  if (!user) {
-    throw new Error("useHousehold requires an authenticated user");
-  }
+  const [membership, setMembership] = useState<GroupMembership | null>(null);
+  const [households, setHouseholds] = useState<Household[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user || !groupId) {
+      setLoading(false); // eslint-disable-line react-hooks/set-state-in-effect -- guard for missing params
+      return;
+    }
+
+    let membershipLoaded = false;
+    let householdsLoaded = false;
+
+    const maybeFinish = () => {
+      if (membershipLoaded && householdsLoaded) setLoading(false);
+    };
+
+    const unsubMembership = subscribeToUserMembership(
+      user.id,
+      groupId,
+      (m) => {
+        setMembership(m);
+        membershipLoaded = true;
+        maybeFinish();
+      }
+    );
+
+    const unsubHouseholds = subscribeToHouseholds(groupId, (h) => {
+      setHouseholds(h);
+      householdsLoaded = true;
+      maybeFinish();
+    });
+
+    return () => {
+      unsubMembership();
+      unsubHouseholds();
+    };
+  }, [user, groupId]);
+
+  const household = households.find((h) => h.id === membership?.householdId);
+
   return {
-    householdId: user.id,
-    householdName: user.displayName,
+    householdId: membership?.householdId ?? "",
+    householdName: membership?.householdName ?? "",
+    householdColor: household?.color ?? "",
+    loading,
+    membership,
   };
 }

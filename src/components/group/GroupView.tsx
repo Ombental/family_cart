@@ -18,7 +18,8 @@ import { GroceryList } from "@/components/list/GroceryList";
 import { ItemActions } from "@/components/list/ItemActions";
 import { regenerateInviteCode, leaveGroup } from "@/lib/firestore-groups";
 import { deleteWithUndo } from "@/lib/delete-with-undo";
-import { useHousehold } from "@/hooks/useHousehold";
+import { useHouseholdContext } from "@/hooks/useHousehold";
+import { useAuth } from "@/hooks/useAuth";
 import { useItems } from "@/hooks/useItems";
 import { useTrip } from "@/hooks/useTrip";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
@@ -41,7 +42,8 @@ interface GroupViewProps {
  */
 export function GroupView({ group, households }: GroupViewProps) {
   const navigate = useNavigate();
-  const { householdId, householdName } = useHousehold();
+  const { user } = useAuth();
+  const { householdId, householdName } = useHouseholdContext(group.id);
   const { isOnline } = useOnlineStatus();
   const {
     items,
@@ -82,9 +84,9 @@ export function GroupView({ group, households }: GroupViewProps) {
   }, [group.id]);
 
   const handleLeaveGroup = useCallback(async () => {
-    await leaveGroup({ groupId: group.id, householdId });
+    await leaveGroup({ groupId: group.id, userId: user!.id, householdId });
     navigate("/", { replace: true });
-  }, [group.id, householdId, navigate]);
+  }, [group.id, user, householdId, navigate]);
 
   const handleStartShopping = useCallback(async () => {
     // If current household already has an active trip, go straight to shopper mode
