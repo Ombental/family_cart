@@ -7,6 +7,7 @@
 
 import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export interface ItemActionsProps {
   /** The householdId that owns the item. */
@@ -25,6 +26,7 @@ export function ItemActions({
   onEdit,
   onDelete,
 }: ItemActionsProps) {
+  const { t } = useLanguage();
   // Ownership gate: hide controls for items from other households
   if (itemHouseholdId !== currentHouseholdId) {
     return null;
@@ -36,7 +38,7 @@ export function ItemActions({
         variant="ghost"
         size="icon-xs"
         onClick={onEdit}
-        aria-label="Edit item"
+        aria-label={t("items.editItem")}
       >
         <Pencil className="size-3.5" />
       </Button>
@@ -44,7 +46,7 @@ export function ItemActions({
         variant="ghost"
         size="icon-xs"
         onClick={onDelete}
-        aria-label="Delete item"
+        aria-label={t("items.deleteItem")}
       >
         <Trash2 className="size-3.5 text-destructive" />
       </Button>

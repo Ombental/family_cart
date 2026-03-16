@@ -2,6 +2,7 @@ import * as React from "react";
 import { Popover as PopoverPrimitive } from "radix-ui";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { ItemSuggestion } from "@/hooks/useItemCatalog";
 
 const MAX_VISIBLE = 8;
@@ -29,6 +30,7 @@ export function ItemCombobox({
   id,
   autoFocus = false,
 }: ItemComboboxProps) {
+  const { t } = useLanguage();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
   const [highlightIndex, setHighlightIndex] = React.useState(-1);
@@ -204,7 +206,7 @@ export function ItemCombobox({
             >
               <Plus className="size-4 shrink-0" />
               <span>
-                Create &ldquo;{trimmedValue}&rdquo;
+                {t("items.create")} &ldquo;{trimmedValue}&rdquo;
               </span>
             </div>
           )}

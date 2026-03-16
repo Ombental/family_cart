@@ -10,6 +10,7 @@ import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ItemCombobox } from "./ItemCombobox";
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { ItemSuggestion } from "@/hooks/useItemCatalog";
 import { UNIT_OPTIONS } from "@/lib/units";
 
@@ -44,6 +45,7 @@ export function EditItemForm({
   onSave,
   onCancel,
 }: EditItemFormProps) {
+  const { t } = useLanguage();
   const [name, setName] = useState(initialName);
   const [qty, setQty] = useState(initialQty);
   const [unit, setUnit] = useState(initialUnit);
@@ -78,7 +80,7 @@ export function EditItemForm({
           suggestions={suggestions ?? []}
           autoFocus={true}
           disabled={saving}
-          placeholder="Item name"
+          placeholder={t("items.itemNameEditPlaceholder")}
           className="h-7 text-sm flex-1"
         />
         {/* Qty */}
@@ -100,7 +102,7 @@ export function EditItemForm({
           <option value="">—</option>
           {UNIT_OPTIONS.map((u) => (
             <option key={u.value} value={u.value}>
-              {u.label}
+              {t("units." + u.value)}
             </option>
           ))}
         </select>
@@ -111,7 +113,7 @@ export function EditItemForm({
         <Input
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Notes (optional)"
+          placeholder={t("items.notesEditPlaceholder")}
           className="h-7 text-sm flex-1"
           disabled={saving}
         />
@@ -122,7 +124,7 @@ export function EditItemForm({
           variant="ghost"
           size="icon-xs"
           disabled={saving || !name.trim()}
-          aria-label="Save changes"
+          aria-label={t("items.saveChanges")}
         >
           <Check className="size-3.5 text-green-600" />
         </Button>
@@ -132,7 +134,7 @@ export function EditItemForm({
           size="icon-xs"
           onClick={onCancel}
           disabled={saving}
-          aria-label="Cancel editing"
+          aria-label={t("items.cancelEditing")}
         >
           <X className="size-3.5" />
         </Button>
