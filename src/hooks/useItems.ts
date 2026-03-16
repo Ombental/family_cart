@@ -14,6 +14,7 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   subscribeToItems,
+  purgeDeletedItems,
   addItem as firestoreAddItem,
   updateItem as firestoreUpdateItem,
   softDeleteItem as firestoreSoftDeleteItem,
@@ -56,6 +57,9 @@ export function useItems(
       setLoading(false); // eslint-disable-line react-hooks/set-state-in-effect -- guard for missing groupId
       return;
     }
+
+    // Purge stale soft-deleted items on mount (replaces Cloud Function)
+    purgeDeletedItems(groupId).catch(() => {/* best-effort cleanup */});
 
     const unsub = subscribeToItems(groupId, (updatedItems) => {
       setItems(updatedItems);

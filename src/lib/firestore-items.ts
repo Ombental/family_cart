@@ -10,10 +10,14 @@ import {
   addDoc,
   updateDoc,
   getDoc,
+  getDocs,
+  deleteDoc,
   onSnapshot,
   serverTimestamp,
   query,
+  where,
   orderBy,
+  Timestamp,
   type Unsubscribe,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -213,6 +217,28 @@ export async function toggleItemStatus(
   const newStatus = currentStatus === "pending" ? "bought" : "pending";
 
   await updateDoc(itemRef, { status: newStatus });
+}
+
+// ---------------------------------------------------------------------------
+// PURGE DELETED ITEMS  (client-side replacement for Cloud Function)
+// ---------------------------------------------------------------------------
+
+/**
+ * Permanently delete soft-deleted items whose deletedAt is older than 10 seconds.
+ *
+ * Runs client-side on subscription init — replaces the scheduled Cloud Function
+ * that required the Blaze plan.
+ */
+export async function purgeDeletedItems(groupId: string): Promise<void> {
+  const cutoff = Timestamp.fromMillis(Date.now() - 10_000);
+  const colRef = collection(db, "groups", groupId, "items");
+  const q = query(
+    colRef,
+    where("deleted", "==", true),
+    where("deletedAt", "<", cutoff)
+  );
+  const snap = await getDocs(q);
+  await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
 }
 
 // ---------------------------------------------------------------------------
