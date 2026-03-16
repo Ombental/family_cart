@@ -188,27 +188,15 @@ Add an explicit "Add to Home Screen" nudge during onboarding. Intercept `beforei
 
 ---
 
-## Pilot User Provisioning
+## Household Identity
 
-> **[TL]** Auth is deferred, but this needs guardrails. "Hardcode or manually provision" without constraints will result in user IDs in component files.
-
-**Rules — non-negotiable:**
-
-1. No user identifiers in component files or committed app config.
-2. Pilot identities are set via environment variables only:
-   ```
-   VITE_PILOT_HOUSEHOLD_ID=<uuid>
-   VITE_PILOT_HOUSEHOLD_NAME=<display_name>
-   ```
-3. A seed script at `scripts/seed-pilot-users.ts` creates Firestore household documents. The script is committed to the repo. The values it consumes come from `.env.pilot`, which is **gitignored**.
-4. One named team member (designated by PM) owns running the seed script and distributing `.env.pilot` files to pilot participants out-of-band.
-5. When full auth ships, the `VITE_PILOT_HOUSEHOLD_ID` pattern is removed entirely. Do not build anything that depends on it persisting.
+Household identity is generated dynamically. Users enter a household name in the app's setup flow, which creates a UUID via `crypto.randomUUID()` and persists both in localStorage. The `useHousehold()` hook reads these values at runtime. No env vars or seed scripts are needed.
 
 ---
 
 ## Out of Scope (This Phase)
 
-- Full authentication system — pilot users provisioned via seed script (see above)
+- Full authentication system
 - State management library — local component state is fine at this scale
 - Push notifications
 - Analytics / event tracking

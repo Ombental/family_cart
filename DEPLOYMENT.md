@@ -17,7 +17,7 @@ This document walks through every step required to go from a fresh clone to a ru
 5. [Firestore Database Configuration](#5-firestore-database-configuration)
 6. [Cloud Functions Deployment](#6-cloud-functions-deployment)
 7. [Frontend Build and Deployment](#7-frontend-build-and-deployment)
-8. [Pilot User Provisioning](#8-pilot-user-provisioning)
+8. [Household Identity](#8-household-identity)
 9. [PWA Assets](#9-pwa-assets)
 10. [Verification Checklist](#10-verification-checklist)
 11. [Local Development](#11-local-development)
@@ -194,7 +194,6 @@ Key points:
 |---|---|---|
 | `.env.example` | Yes | Template with placeholder values |
 | `.env` | **No** (gitignored) | Firebase config for local dev and build |
-| `.env.pilot` | **No** (gitignored) | Pilot household identity |
 | `.env.local` | **No** (gitignored) | Optional local overrides |
 
 ### 4.2 Create Your `.env` File
@@ -215,10 +214,6 @@ VITE_FIREBASE_PROJECT_ID=familycart-pilot
 VITE_FIREBASE_STORAGE_BUCKET=familycart-pilot.appspot.com
 VITE_FIREBASE_MESSAGING_SENDER_ID=123456789012
 VITE_FIREBASE_APP_ID=1:123456789012:web:abc123def456
-
-# Pilot Household
-VITE_PILOT_HOUSEHOLD_ID=your-uuid-here
-VITE_PILOT_HOUSEHOLD_NAME=Your Family Name
 ```
 
 ### 4.3 Environment Variable Reference
@@ -231,25 +226,14 @@ VITE_PILOT_HOUSEHOLD_NAME=Your Family Name
 | `VITE_FIREBASE_STORAGE_BUCKET` | Yes | Firebase storage bucket (`<project>.appspot.com`) |
 | `VITE_FIREBASE_MESSAGING_SENDER_ID` | Yes | Firebase Cloud Messaging sender ID |
 | `VITE_FIREBASE_APP_ID` | Yes | Firebase app ID |
-| `VITE_PILOT_HOUSEHOLD_ID` | Yes | UUID identifying the pilot household (generate with `uuidgen` or any UUID tool) |
-| `VITE_PILOT_HOUSEHOLD_NAME` | Yes | Display name for the pilot household (e.g. "Smith Family") |
 
 ### 4.4 How Environment Variables Are Used
 
 All variables use the `VITE_` prefix, which tells Vite to expose them to the frontend bundle via `import.meta.env`. They are baked into the build at compile time — they are **not** runtime secrets.
 
 - **Firebase config** (`src/lib/firebase.ts`): Initializes the Firebase SDK client
-- **Pilot identity** (`src/hooks/useHousehold.ts`): Returns the household ID and name used for all attribution and ownership checks
 
-### 4.5 Create `.env.pilot` (for Seed Script)
-
-The seed script reads from a separate file:
-
-```bash
-# .env.pilot
-VITE_PILOT_HOUSEHOLD_ID=same-uuid-as-in-env
-VITE_PILOT_HOUSEHOLD_NAME=Same Family Name
-```
+> **Note:** Household identity is not sourced from env vars. The `useHousehold` hook reads the household ID and name from `localStorage`, where they are persisted after the user completes the in-app setup flow.
 
 > **Security note:** Firebase Web API keys are safe to include in the frontend bundle. They identify the project but do not grant write access — that is controlled by Firestore Security Rules. Do not confuse them with service account keys, which must never be committed.
 
@@ -466,54 +450,9 @@ npm run build && firebase deploy
 
 ---
 
-## 8. Pilot User Provisioning
+## 8. Household Identity
 
-The pilot uses environment-variable-based identity instead of real authentication. Each pilot participant needs a unique household.
-
-### 8.1 Generate Household IDs
-
-For each pilot household, generate a UUID:
-
-```bash
-uuidgen
-# Output: 550e8400-e29b-41d4-a716-446655440000
-```
-
-### 8.2 Create `.env.pilot` Files
-
-Create a `.env.pilot` for each pilot household:
-
-```bash
-# Household A
-VITE_PILOT_HOUSEHOLD_ID=550e8400-e29b-41d4-a716-446655440000
-VITE_PILOT_HOUSEHOLD_NAME=Smith Family
-```
-
-```bash
-# Household B
-VITE_PILOT_HOUSEHOLD_ID=6ba7b810-9dad-11d1-80b4-00c04fd430c8
-VITE_PILOT_HOUSEHOLD_NAME=Jones Family
-```
-
-### 8.3 Run the Seed Script
-
-The seed script provisions household documents in Firestore:
-
-```bash
-npx tsx scripts/seed-pilot-users.ts
-```
-
-> **Note:** The seed script is currently a scaffold. It reads from `.env.pilot` and logs the household identity. Complete the `TODO` in the script to write household documents to Firestore before running against the pilot project.
-
-### 8.4 Distribute to Participants
-
-1. Each pilot participant receives:
-   - Their `.env` file with the shared Firebase config + their unique household ID/name
-   - Instructions to place it in the project root (for local dev) or to access the hosted URL
-2. For the hosted deployment, each participant needs a **separate build** with their household credentials baked in, OR the app needs a household selection UI
-3. Distribute `.env.pilot` files **out-of-band** (not via Slack or email in plaintext)
-
-> **Important:** A single team member (designated by the PM) owns the provisioning process. See DEVELOPER_INSTRUCTIONS.md Section 7 for the full rules.
+Household identity is handled dynamically via the app's setup flow. Users enter a household name on the home page, which generates a UUID via `crypto.randomUUID()` and persists both values in localStorage. No env vars or seed scripts are needed.
 
 ---
 

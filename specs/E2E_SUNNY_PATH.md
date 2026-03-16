@@ -37,7 +37,7 @@ The test uses two independent browser contexts (separate localStorage, separate 
 | Firebase backend | Running against Firebase emulator suite **or** a dedicated test project. Firestore, Cloud Functions deployed. |
 | App server | Vite dev server or preview build accessible at `BASE_URL` (e.g., `http://localhost:5173`) |
 | Browser | Chromium (Playwright default). Two isolated `BrowserContext` instances: **ctxA** (Household A) and **ctxB** (Household B). |
-| Env vars | Not required in E2E -- the app generates household identity via `crypto.randomUUID()` on first use and stores in localStorage. No `VITE_PILOT_HOUSEHOLD_ID` needed for test. |
+| Env vars | Not required in E2E -- the app generates household identity via `crypto.randomUUID()` on first use and stores in localStorage. |
 
 ### 2.2 Seed Data
 

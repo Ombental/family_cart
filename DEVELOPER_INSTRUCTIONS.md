@@ -65,10 +65,7 @@ familycart/
 │   └── src/
 │       ├── purgeDeletedItems.ts     ← Soft-delete expiry (runs every 1 min)
 │       └── purgeExpiredSummaries.ts ← 30-day trip retention (runs every 24h)
-├── scripts/
-│   └── seed-pilot-users.ts          ← Pilot user provisioning (see Section 7)
 ├── .env.example                     ← Template — commit this
-├── .env.pilot                       ← Gitignored — never commit this
 └── .gitignore
 ```
 
@@ -284,26 +281,9 @@ Do not rely on the browser's default install prompt. Intercept the `beforeinstal
 
 ---
 
-## 7. Pilot User Provisioning
+## 7. Household Identity
 
-Full auth is deferred. Pilot users are pre-provisioned as Firestore household documents. These rules are non-negotiable.
-
-**Rule 1 — No identifiers in source code.** No hardcoded household ID, household name, or user identifier anywhere other than a gitignored env file. PRs containing violations will be rejected.
-
-**Rule 2 — Environment variables only.**
-
-```
-VITE_PILOT_HOUSEHOLD_ID=<uuid>
-VITE_PILOT_HOUSEHOLD_NAME=<display_name>
-```
-
-An `.env.example` with placeholder values is committed to the repo so developers know what the file should contain. The actual `.env.pilot` file is gitignored.
-
-**Rule 3 — Provisioning via seed script.** `scripts/seed-pilot-users.ts` creates Firestore household documents for pilot participants. The script is committed to the repo. It reads values from `.env.pilot` at runtime.
-
-**Rule 4 — One named owner.** A single team member, designated by the PM before Sprint 1 begins, is responsible for running the seed script against the pilot Firebase project and distributing `.env.pilot` files to participants out-of-band. This person's name must be documented in the project Notion before Sprint 1 kickoff. It must not be distributed via Slack or email in plaintext.
-
-**Rule 5 — This pattern does not outlive the pilot.** When full auth ships, `VITE_PILOT_HOUSEHOLD_ID` is removed. Do not build any logic that depends on this pattern persisting.
+Household identity is generated dynamically at runtime. When a user enters their household name on the home page, `saveHouseholdIdentity()` creates a UUID via `crypto.randomUUID()` and stores both the ID and name in localStorage. The `useHousehold()` hook reads these values. No env vars or seed scripts are required.
 
 ---
 
@@ -339,7 +319,7 @@ A task is done when all of the following are true. There are no pilot-speed exce
 
 | Item | Status |
 |---|---|
-| User authentication (login, signup, session management) | Deferred — pilot users are provisioned manually |
+| User authentication (login, signup, session management) | Deferred — household identity is handled dynamically via localStorage (see Section 7) |
 | Push notifications | Deferred — US-10 is a UI-only visual flag, no push infrastructure |
 | Analytics event tracking | Deferred |
 | Cost splitting | Post-pilot |
