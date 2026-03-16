@@ -240,7 +240,7 @@ function AddItemSheet({
                 <option value="">—</option>
                 {UNIT_OPTIONS.map((u) => (
                   <option key={u.value} value={u.value}>
-                    {u.label}
+                    {t("units." + u.value)}
                   </option>
                 ))}
               </select>
@@ -250,12 +250,12 @@ function AddItemSheet({
           {/* Notes */}
           <div className="space-y-1.5">
             <Label htmlFor="add-item-notes" className="text-[13px] font-medium text-[#4a4a4a]">
-              Notes (optional)
+              {t("items.notesOptional")}
             </Label>
             <Input
               id="add-item-notes"
               type="text"
-              placeholder="Brand preference, size, etc."
+              placeholder={t("items.notesPlaceholder")}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               disabled={disabled}
@@ -273,7 +273,7 @@ function AddItemSheet({
             {submitting ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              "Add to List"
+              t("items.addToList")
             )}
           </Button>
         </form>
