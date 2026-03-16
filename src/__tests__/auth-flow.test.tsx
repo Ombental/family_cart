@@ -128,6 +128,7 @@ function renderWithAuthenticatedUser(
     phoneNumber: user.phoneNumber as string,
     displayName: user.displayName as string,
     loginAt: Date.now(),
+    version: import.meta.env.VITE_SESSION_VERSION ?? "1",
   };
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
 
