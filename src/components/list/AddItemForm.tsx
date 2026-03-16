@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ItemCombobox } from "./ItemCombobox";
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { ItemSuggestion } from "@/hooks/useItemCatalog";
 import { UNIT_OPTIONS } from "@/lib/units";
 
@@ -58,12 +59,13 @@ export function AddItemForm({ onAdd, disabled = false, addedDuringTripId, sugges
 /* ------------------------------------------------------------------ */
 
 function AddItemFAB({ onClick, disabled }: { onClick: () => void; disabled: boolean }) {
+  const { t } = useLanguage();
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      aria-label="Add item"
+      aria-label={t("items.addItem")}
       className="fixed bottom-20 end-4 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform active:scale-95 disabled:opacity-50"
       style={{ backgroundColor: "#2a7e3b" }}
     >
@@ -89,6 +91,7 @@ function AddItemSheet({
   onClose: () => void;
   suggestions?: ItemSuggestion[];
 }) {
+  const { t } = useLanguage();
   const nameRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState("");
@@ -170,11 +173,11 @@ function AddItemSheet({
 
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-bold">Add Item</h2>
+          <h2 className="text-lg font-bold">{t("items.addItemTitle")}</h2>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t("common.close")}
             className="rounded-full p-1 hover:bg-muted transition-colors"
           >
             <X className="h-5 w-5 text-[#82827c]" />
