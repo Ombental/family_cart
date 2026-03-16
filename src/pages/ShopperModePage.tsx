@@ -7,7 +7,7 @@ import { AddItemForm } from "@/components/list/AddItemForm";
 import { ShopperGroupCard } from "@/components/shopper/ShopperGroupCard";
 import { useTrip } from "@/hooks/useTrip";
 import { useItems } from "@/hooks/useItems";
-import { useHousehold } from "@/hooks/useHousehold";
+import { useHouseholdContext } from "@/hooks/useHousehold";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useGroup } from "@/hooks/useGroup";
 import { useItemCatalog } from "@/hooks/useItemCatalog";
@@ -28,7 +28,7 @@ import type { Household } from "@/types/group";
 export function ShopperModePage() {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
-  const { householdId, householdName } = useHousehold();
+  const { householdId, householdName } = useHouseholdContext(groupId);
   const { isOnline } = useOnlineStatus();
   const { households } = useGroup(groupId);
   const { activeTrip, loading: tripLoading, completeTrip } = useTrip(

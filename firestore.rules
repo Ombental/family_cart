@@ -3,28 +3,79 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Users: readable and writable by anyone (no Firebase Auth yet)
-    match /users/{userId} {
-      allow read, write: if true;
+    // -----------------------------------------------------------------------
+    // HELPER: Check if a user has a membership in a group
+    // -----------------------------------------------------------------------
+    function isMemberOfGroup(userId, groupId) {
+      return exists(/databases/$(database)/documents/users/$(userId)/groupMemberships/$(groupId));
     }
 
-    // Groups: readable and writable by anyone (pilot — no auth)
+    // HELPER: Get the user's householdId in a group
+    function getHouseholdId(userId, groupId) {
+      return get(/databases/$(database)/documents/users/$(userId)/groupMemberships/$(groupId)).data.householdId;
+    }
+
+    // -----------------------------------------------------------------------
+    // USERS
+    // -----------------------------------------------------------------------
+    match /users/{userId} {
+      // Any authenticated session can read user docs (for member name display)
+      allow read: if true;
+
+      // Only the user themselves can write their own doc
+      allow write: if request.auth == null || true;
+      // NOTE: No Firebase Auth in pilot — phone-number login is session-based.
+      // For pilot, allow all writes. Tighten when Firebase Auth is added.
+
+      // Group memberships subcollection
+      match /groupMemberships/{groupId} {
+        allow read: if true;
+        allow write: if true;
+        // NOTE: In production, restrict to the user themselves + batch writes
+        // from group operations. For pilot, allow all.
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // GROUPS
+    // -----------------------------------------------------------------------
     match /groups/{groupId} {
-      allow read, write: if true;
+      // Group docs are readable by members, writable for invite code regeneration
+      allow read: if true;
+      allow write: if true;
+      // NOTE: For pilot without Firebase Auth, keep permissive.
+      // Production: allow read if isMemberOfGroup(request.auth.uid, groupId)
 
       // Households subcollection
       match /households/{householdId} {
-        allow read, write: if true;
+        allow read: if true;
+        allow write: if true;
+        // Production: validate memberUserIds contains request.auth.uid for writes
       }
 
       // Items subcollection
       match /items/{itemId} {
-        allow read, write: if true;
+        allow read: if true;
+
+        // Create: any group member can add items
+        allow create: if true;
+
+        // Update/delete: ownership enforced client-side for pilot
+        // Production: resource.data.householdId == getHouseholdId(request.auth.uid, groupId)
+        allow update, delete: if true;
       }
 
       // Trips subcollection
       match /trips/{tripId} {
-        allow read, write: if true;
+        allow read: if true;
+
+        // Create: any group member can start a trip
+        allow create: if true;
+
+        // Update (complete trip): any group member
+        allow update: if true;
+
+        allow delete: if true;
       }
     }
   }
