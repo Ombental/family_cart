@@ -17,7 +17,8 @@ import type { ItemGroup } from "@/types/item-group";
  */
 export function useGroupedItems(
   items: Item[],
-  householdMap: Map<string, Household>
+  householdMap: Map<string, Household>,
+  sortBy: "alphabetical" | "department" = "alphabetical"
 ): { pendingGroups: ItemGroup[]; boughtGroups: ItemGroup[] } {
   return useMemo(() => {
     // 1. Group by normalized name
@@ -57,6 +58,7 @@ export function useGroupedItems(
         key,
         canonicalName: earliest.name,
         items: sorted,
+        department: earliest.department ?? "",
         householdCount: householdIds.size,
         boughtCount,
         allBought: boughtCount === sorted.length,
@@ -74,10 +76,25 @@ export function useGroupedItems(
       }
     }
 
-    // 4. Sort alphabetically by canonicalName
-    pendingGroups.sort((a, b) => a.canonicalName.localeCompare(b.canonicalName));
-    boughtGroups.sort((a, b) => a.canonicalName.localeCompare(b.canonicalName));
+    // 4. Sort
+    if (sortBy === "department") {
+      // Sort by department alpha (empty last), then canonicalName within department
+      const departmentSort = (a: ItemGroup, b: ItemGroup) => {
+        const deptA = a.department;
+        const deptB = b.department;
+        if (deptA === "" && deptB !== "") return 1;
+        if (deptA !== "" && deptB === "") return -1;
+        const deptCmp = deptA.toLowerCase().localeCompare(deptB.toLowerCase());
+        if (deptCmp !== 0) return deptCmp;
+        return a.canonicalName.localeCompare(b.canonicalName);
+      };
+      pendingGroups.sort(departmentSort);
+      boughtGroups.sort(departmentSort);
+    } else {
+      pendingGroups.sort((a, b) => a.canonicalName.localeCompare(b.canonicalName));
+      boughtGroups.sort((a, b) => a.canonicalName.localeCompare(b.canonicalName));
+    }
 
     return { pendingGroups, boughtGroups };
-  }, [items, householdMap]);
+  }, [items, householdMap, sortBy]);
 }

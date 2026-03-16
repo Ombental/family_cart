@@ -185,6 +185,10 @@ const en: Record<string, string> = {
   "items.undo": "Undo",
   "items.undoFailed": "Failed to undo delete.",
   "items.create": "Create",
+  "items.department": "Department",
+  "items.departmentPlaceholder": "e.g. Dairy, Produce, Bakery...",
+  "items.uncategorized": "Uncategorized",
+  "items.createDepartment": "Create",
 
   // ---- shopper ----
   "shopper.title": "Shopper Mode",
@@ -204,6 +208,8 @@ const en: Record<string, string> = {
   "shopper.uncheck": "Uncheck {{name}}",
   "shopper.checkOffFor": "Check off {{name}} for {{household}}",
   "shopper.uncheckFor": "Uncheck {{name}} for {{household}}",
+  "shopper.sortAlphabetical": "A-Z",
+  "shopper.sortDepartment": "By Department",
   "shopper.new": "New",
   "shopper.done": "{{bought}} of {{total}} done",
 
@@ -449,6 +455,10 @@ const he: Record<string, string> = {
   "items.undo": "\u05D1\u05D9\u05D8\u05D5\u05DC",
   "items.undoFailed": "\u05D4\u05D1\u05D9\u05D8\u05D5\u05DC \u05E0\u05DB\u05E9\u05DC.",
   "items.create": "\u05D9\u05E6\u05D9\u05E8\u05D4",
+  "items.department": "\u05DE\u05D7\u05DC\u05E7\u05D4",
+  "items.departmentPlaceholder": "\u05DC\u05DE\u05E9\u05DC: \u05DE\u05D5\u05E6\u05E8\u05D9 \u05D7\u05DC\u05D1, \u05D9\u05E8\u05E7\u05D5\u05EA, \u05DE\u05D0\u05E4\u05D9\u05D9\u05D4...",
+  "items.uncategorized": "\u05DC\u05DC\u05D0 \u05E7\u05D8\u05D2\u05D5\u05E8\u05D9\u05D4",
+  "items.createDepartment": "\u05D9\u05E6\u05D9\u05E8\u05D4",
 
   // ---- shopper ----
   "shopper.title": "\u05DE\u05E6\u05D1 \u05E7\u05E0\u05D9\u05D5\u05EA",
@@ -468,6 +478,8 @@ const he: Record<string, string> = {
   "shopper.uncheck": "\u05D1\u05D8\u05DC \u05E1\u05D9\u05DE\u05D5\u05DF {{name}}",
   "shopper.checkOffFor": "\u05E1\u05DE\u05DF {{name}} \u05E2\u05D1\u05D5\u05E8 {{household}}",
   "shopper.uncheckFor": "\u05D1\u05D8\u05DC \u05E1\u05D9\u05DE\u05D5\u05DF {{name}} \u05E2\u05D1\u05D5\u05E8 {{household}}",
+  "shopper.sortAlphabetical": "\u05D0-\u05EA",
+  "shopper.sortDepartment": "\u05DC\u05E4\u05D9 \u05DE\u05D7\u05DC\u05E7\u05D4",
   "shopper.new": "\u05D7\u05D3\u05E9",
   "shopper.done": "{{bought}} \u05DE\u05EA\u05D5\u05DA {{total}} \u05D4\u05D5\u05E9\u05DC\u05DE\u05D5",
 

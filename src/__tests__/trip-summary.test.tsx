@@ -128,15 +128,15 @@ describe("US-12: TripHistoryPage", () => {
         id: "trip-1",
         startedByHouseholdName: "Smith Family",
         purchasedItems: [
-          { name: "Milk", qty: 2, unit: "L", householdId: "household-1" },
-          { name: "Bread", qty: 1, unit: "loaf", householdId: "household-2" },
+          { name: "Milk", qty: 2, unit: "L", department: "", householdId: "household-1" },
+          { name: "Bread", qty: 1, unit: "loaf", department: "", householdId: "household-2" },
         ],
       }),
       buildTrip({
         id: "trip-2",
         startedByHouseholdName: "Jones Family",
         purchasedItems: [
-          { name: "Eggs", qty: 12, unit: "pcs", householdId: "household-1" },
+          { name: "Eggs", qty: 12, unit: "pcs", department: "", householdId: "household-1" },
         ],
       }),
     ];
@@ -191,9 +191,9 @@ describe("US-12: TripSummaryPage", () => {
       id: "trip-1",
       startedByHouseholdName: "Smith Family",
       purchasedItems: [
-        { name: "Milk", qty: 2, unit: "L", householdId: "household-1" },
-        { name: "Cheese", qty: 1, unit: "box", householdId: "household-1" },
-        { name: "Bread", qty: 3, unit: "loaf", householdId: "household-2" },
+        { name: "Milk", qty: 2, unit: "L", department: "", householdId: "household-1" },
+        { name: "Cheese", qty: 1, unit: "box", department: "", householdId: "household-1" },
+        { name: "Bread", qty: 3, unit: "loaf", department: "", householdId: "household-2" },
       ],
     });
 
@@ -221,7 +221,7 @@ describe("US-12: TripSummaryPage", () => {
       id: "trip-1",
       startedByHouseholdName: "Smith Family",
       purchasedItems: [
-        { name: "Milk", qty: 1, unit: "gallon", householdId: "household-1" },
+        { name: "Milk", qty: 1, unit: "gallon", department: "", householdId: "household-1" },
       ],
     });
 
@@ -275,9 +275,9 @@ describe("US-12a: Per-Household Item Breakdown", () => {
       id: "trip-1",
       startedByHouseholdName: "Smith Family",
       purchasedItems: [
-        { name: "Milk", qty: 2, unit: "L", householdId: "household-1" },
-        { name: "Cheese", qty: 1, unit: "box", householdId: "household-1" },
-        { name: "Bread", qty: 3, unit: "loaf", householdId: "household-2" },
+        { name: "Milk", qty: 2, unit: "L", department: "", householdId: "household-1" },
+        { name: "Cheese", qty: 1, unit: "box", department: "", householdId: "household-1" },
+        { name: "Bread", qty: 3, unit: "loaf", department: "", householdId: "household-2" },
       ],
     });
 
@@ -387,7 +387,7 @@ describe("US-12a: Per-Household Item Breakdown", () => {
       id: "trip-1",
       startedByHouseholdName: "Smith Family",
       purchasedItems: [
-        { name: "Mystery Item", qty: 1, unit: "pc", householdId: "household-unknown" },
+        { name: "Mystery Item", qty: 1, unit: "pc", department: "", householdId: "household-unknown" },
       ],
     });
 

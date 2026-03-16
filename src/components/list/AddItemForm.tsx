@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ItemCombobox } from "./ItemCombobox";
+import { DepartmentCombobox } from "./DepartmentCombobox";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { ItemSuggestion } from "@/hooks/useItemCatalog";
 import { UNIT_OPTIONS } from "@/lib/units";
@@ -15,12 +16,15 @@ interface AddItemFormProps {
     qty: number;
     unit: string;
     notes: string;
+    department?: string;
     addedDuringTripId?: string | null;
   }) => Promise<string>;
   disabled?: boolean;
   /** When provided, attaches the trip ID to newly added items (Shopper Mode). */
   addedDuringTripId?: string | null;
   suggestions?: ItemSuggestion[];
+  /** Department suggestions from useDepartmentCatalog. */
+  departmentSuggestions?: string[];
 }
 
 /**
@@ -35,7 +39,7 @@ interface AddItemFormProps {
  *
  * The entire form is disabled when the `disabled` prop is true (offline).
  */
-export function AddItemForm({ onAdd, disabled = false, addedDuringTripId, suggestions }: AddItemFormProps) {
+export function AddItemForm({ onAdd, disabled = false, addedDuringTripId, suggestions, departmentSuggestions }: AddItemFormProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -48,6 +52,7 @@ export function AddItemForm({ onAdd, disabled = false, addedDuringTripId, sugges
           addedDuringTripId={addedDuringTripId}
           onClose={() => setOpen(false)}
           suggestions={suggestions}
+          departmentSuggestions={departmentSuggestions}
         />
       )}
     </>
@@ -84,12 +89,14 @@ function AddItemSheet({
   addedDuringTripId,
   onClose,
   suggestions,
+  departmentSuggestions,
 }: {
   onAdd: AddItemFormProps["onAdd"];
   disabled: boolean;
   addedDuringTripId?: string | null;
   onClose: () => void;
   suggestions?: ItemSuggestion[];
+  departmentSuggestions?: string[];
 }) {
   const { t } = useLanguage();
   const nameRef = useRef<HTMLInputElement>(null);
@@ -98,6 +105,7 @@ function AddItemSheet({
   const [qty, setQty] = useState("");
   const [unit, setUnit] = useState("");
   const [notes, setNotes] = useState("");
+  const [department, setDepartment] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const canSubmit = name.trim().length > 0 && !submitting && !disabled;
@@ -139,6 +147,7 @@ function AddItemSheet({
           qty: qty ? Number(qty) : 1,
           unit: unit.trim(),
           notes: notes.trim(),
+          department: department.trim(),
           addedDuringTripId: addedDuringTripId ?? null,
         });
 
@@ -147,12 +156,13 @@ function AddItemSheet({
         setQty("");
         setUnit("");
         setNotes("");
+        setDepartment("");
         nameRef.current?.focus();
       } finally {
         setSubmitting(false);
       }
     },
-    [canSubmit, name, qty, unit, notes, addedDuringTripId, onAdd]
+    [canSubmit, name, qty, unit, notes, department, addedDuringTripId, onAdd]
   );
 
   return createPortal(
@@ -201,6 +211,7 @@ function AddItemSheet({
                 if (!qty) setQty(String(suggestion.qty));
                 if (!unit) setUnit(suggestion.unit);
                 if (!notes) setNotes(suggestion.notes);
+                if (!department) setDepartment(suggestion.department);
               }}
               suggestions={suggestions ?? []}
               disabled={disabled}
@@ -245,6 +256,22 @@ function AddItemSheet({
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* Department */}
+          <div className="space-y-1.5">
+            <Label htmlFor="add-item-department" className="text-[13px] font-medium text-[#4a4a4a]">
+              {t("items.department")}
+            </Label>
+            <DepartmentCombobox
+              id="add-item-department"
+              placeholder={t("items.departmentPlaceholder")}
+              value={department}
+              onChange={setDepartment}
+              suggestions={departmentSuggestions ?? []}
+              disabled={disabled}
+              className="h-11"
+            />
           </div>
 
           {/* Notes */}

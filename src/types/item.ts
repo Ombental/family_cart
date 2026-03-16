@@ -27,6 +27,7 @@ export interface Item {
   householdId: string;
   status: "pending" | "bought" | "missed";
   createdAt: Timestamp;
+  department: string;
   addedDuringTripId: string | null;
   deleted: boolean;
   deletedAt: Timestamp | null;

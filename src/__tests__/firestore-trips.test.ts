@@ -213,6 +213,7 @@ describe("completeTrip", () => {
         name: "Milk",
         qty: 2,
         unit: "gallons",
+        department: "Dairy",
         householdId: "household-1",
         status: "bought",
         deleted: false,
@@ -225,6 +226,7 @@ describe("completeTrip", () => {
         name: "Bread",
         qty: 1,
         unit: "loaf",
+        department: "Bakery",
         householdId: "household-2",
         status: "bought",
         deleted: false,
@@ -248,8 +250,8 @@ describe("completeTrip", () => {
       status: "complete",
       completedAt: { _type: "serverTimestamp" },
       purchasedItems: [
-        { name: "Milk", qty: 2, unit: "gallons", householdId: "household-1" },
-        { name: "Bread", qty: 1, unit: "loaf", householdId: "household-2" },
+        { name: "Milk", qty: 2, unit: "gallons", department: "Dairy", householdId: "household-1" },
+        { name: "Bread", qty: 1, unit: "loaf", department: "Bakery", householdId: "household-2" },
       ],
     });
 
@@ -271,6 +273,7 @@ describe("completeTrip", () => {
         name: "Milk",
         qty: 2,
         unit: "gallons",
+        department: "Dairy",
         householdId: "household-1",
         status: "bought",
         deleted: false,
@@ -295,7 +298,7 @@ describe("completeTrip", () => {
       "mock-doc-ref",
       expect.objectContaining({
         purchasedItems: [
-          { name: "Milk", qty: 2, unit: "gallons", householdId: "household-1" },
+          { name: "Milk", qty: 2, unit: "gallons", department: "Dairy", householdId: "household-1" },
         ],
       })
     );
@@ -493,8 +496,8 @@ describe("subscribeToCompletedTrips", () => {
                 startedByHouseholdId: "household-1",
                 startedByHouseholdName: "Smith Family",
                 purchasedItems: [
-                  { name: "Milk", qty: 2, unit: "gallons", householdId: "household-1" },
-                  { name: "Bread", qty: 1, unit: "loaf", householdId: "household-2" },
+                  { name: "Milk", qty: 2, unit: "gallons", department: "Dairy", householdId: "household-1" },
+                  { name: "Bread", qty: 1, unit: "loaf", department: "Bakery", householdId: "household-2" },
                 ],
               }),
             },
@@ -507,7 +510,7 @@ describe("subscribeToCompletedTrips", () => {
                 startedByHouseholdId: "household-2",
                 startedByHouseholdName: "Jones Family",
                 purchasedItems: [
-                  { name: "Eggs", qty: 12, unit: "pcs", householdId: "household-1" },
+                  { name: "Eggs", qty: 12, unit: "pcs", department: "", householdId: "household-1" },
                 ],
               }),
             },
@@ -533,8 +536,8 @@ describe("subscribeToCompletedTrips", () => {
       startedByHouseholdId: "household-1",
       startedByHouseholdName: "Smith Family",
       purchasedItems: [
-        { name: "Milk", qty: 2, unit: "gallons", householdId: "household-1" },
-        { name: "Bread", qty: 1, unit: "loaf", householdId: "household-2" },
+        { name: "Milk", qty: 2, unit: "gallons", department: "Dairy", householdId: "household-1" },
+        { name: "Bread", qty: 1, unit: "loaf", department: "Bakery", householdId: "household-2" },
       ],
     });
 
@@ -547,7 +550,7 @@ describe("subscribeToCompletedTrips", () => {
       startedByHouseholdId: "household-2",
       startedByHouseholdName: "Jones Family",
       purchasedItems: [
-        { name: "Eggs", qty: 12, unit: "pcs", householdId: "household-1" },
+        { name: "Eggs", qty: 12, unit: "pcs", department: "", householdId: "household-1" },
       ],
     });
 

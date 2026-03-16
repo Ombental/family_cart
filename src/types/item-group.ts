@@ -17,6 +17,8 @@ export interface ItemGroup {
   items: Item[];
   /** Number of distinct households requesting this product */
   householdCount: number;
+  /** Department from the earliest item in the group (for department sorting) */
+  department: string;
   /** Number of items with status "bought" */
   boughtCount: number;
   /** True when every item in the group is bought */

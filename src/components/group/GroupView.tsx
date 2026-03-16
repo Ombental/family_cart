@@ -42,6 +42,7 @@ import { useItems } from "@/hooks/useItems";
 import { useTrip } from "@/hooks/useTrip";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useItemCatalog } from "@/hooks/useItemCatalog";
+import { useDepartmentCatalog } from "@/hooks/useDepartmentCatalog";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { Group, Household } from "@/types/group";
 import type { Item } from "@/types/item";
@@ -82,6 +83,7 @@ export function GroupView({ group, households }: GroupViewProps) {
   } = useTrip(group.id, householdId, householdName, user?.displayName ?? "");
 
   const { suggestions } = useItemCatalog(group.id, items);
+  const departmentSuggestions = useDepartmentCatalog(items);
 
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -385,6 +387,7 @@ export function GroupView({ group, households }: GroupViewProps) {
               items={items}
               households={households}
               suggestions={suggestions}
+              departmentSuggestions={departmentSuggestions}
               editingItemId={editingItemId}
               onEditSave={async (item: Item, fields) => {
                 await updateItem({ itemId: item.id, ...fields });
@@ -414,7 +417,7 @@ export function GroupView({ group, households }: GroupViewProps) {
       </Card>
 
       {/* Add item FAB + bottom sheet (renders fixed-positioned) */}
-      <AddItemForm onAdd={addItem} disabled={!isOnline} suggestions={suggestions} />
+      <AddItemForm onAdd={addItem} disabled={!isOnline} suggestions={suggestions} departmentSuggestions={departmentSuggestions} />
 
       {/* Invite section */}
       <div>

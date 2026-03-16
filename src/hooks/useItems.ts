@@ -31,6 +31,7 @@ export interface UseItemsResult {
     qty: number;
     unit: string;
     notes: string;
+    department?: string;
     addedDuringTripId?: string | null;
   }) => Promise<string>;
   updateItem: (params: {
@@ -39,6 +40,7 @@ export interface UseItemsResult {
     qty?: number;
     unit?: string;
     notes?: string;
+    department?: string;
   }) => Promise<void>;
   softDeleteItem: (itemId: string) => Promise<void>;
   undoDeleteItem: (itemId: string) => Promise<void>;
@@ -77,6 +79,7 @@ export function useItems(
       qty: number;
       unit: string;
       notes: string;
+      department?: string;
       addedDuringTripId?: string | null;
     }) => {
       if (!groupId) throw new Error("No group selected.");
@@ -96,6 +99,7 @@ export function useItems(
       qty?: number;
       unit?: string;
       notes?: string;
+      department?: string;
     }) => {
       if (!groupId) throw new Error("No group selected.");
       return firestoreUpdateItem({
