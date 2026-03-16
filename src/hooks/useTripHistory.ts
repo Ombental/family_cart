@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { subscribeToCompletedTrips } from "@/lib/firestore-trips";
+import { subscribeToCompletedTrips, purgeExpiredTrips } from "@/lib/firestore-trips";
 import type { Trip } from "@/types/trip";
 
 export interface UseTripHistoryResult {
@@ -26,6 +26,9 @@ export function useTripHistory(
       setLoading(false); // eslint-disable-line react-hooks/set-state-in-effect -- guard for missing groupId
       return;
     }
+
+    // Purge expired trip summaries on mount (replaces Cloud Function)
+    purgeExpiredTrips(groupId).catch(() => {/* best-effort cleanup */});
 
     const unsub = subscribeToCompletedTrips(groupId, (updatedTrips) => {
       setTrips(updatedTrips);

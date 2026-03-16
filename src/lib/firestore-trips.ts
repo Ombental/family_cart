@@ -9,6 +9,7 @@ import {
   doc,
   addDoc,
   getDocs,
+  deleteDoc,
   onSnapshot,
   serverTimestamp,
   query,
@@ -16,6 +17,7 @@ import {
   limit,
   orderBy,
   writeBatch,
+  Timestamp,
   type Unsubscribe,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -183,6 +185,28 @@ export async function completeTrip(params: CompleteTripParams): Promise<void> {
     batch.delete(boughtDoc.ref);
   }
   await batch.commit();
+}
+
+// ---------------------------------------------------------------------------
+// PURGE EXPIRED TRIP SUMMARIES  (client-side replacement for Cloud Function)
+// ---------------------------------------------------------------------------
+
+/**
+ * Permanently delete completed trip summaries older than 30 days.
+ *
+ * Runs client-side on subscription init — replaces the scheduled Cloud Function
+ * that required the Blaze plan.
+ */
+export async function purgeExpiredTrips(groupId: string): Promise<void> {
+  const cutoff = Timestamp.fromMillis(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const tripsRef = collection(db, "groups", groupId, "trips");
+  const q = query(
+    tripsRef,
+    where("status", "==", "complete"),
+    where("completedAt", "<", cutoff)
+  );
+  const snap = await getDocs(q);
+  await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
 }
 
 // ---------------------------------------------------------------------------
