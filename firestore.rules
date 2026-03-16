@@ -3,27 +3,64 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Users: readable and writable by anyone (no Firebase Auth yet)
+    // -------------------------------------------------------------------------
+    // SECURITY NOTICE — PILOT MODE
+    // -------------------------------------------------------------------------
+    // The app currently uses custom phone-based auth stored in Firestore rather
+    // than Firebase Auth tokens. Because Firestore security rules cannot verify
+    // identities without `request.auth`, all rules below are permissive for the
+    // pilot phase.
+    //
+    // TODO: Integrate Firebase phone auth so `request.auth.uid` equals the user's
+    // Firestore document ID. Once done, swap each `if true` for the appropriate
+    // enforcing rule shown in the TODO comment above it.
+    // -------------------------------------------------------------------------
+
+    // Returns true when the caller holds a valid Firebase Auth token.
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Returns true when the authenticated caller is a member of the given group
+    // (i.e. their uid matches a household document in the group's subcollection).
+    function isMemberOfGroup(groupId) {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/groups/$(groupId)/households/$(request.auth.uid));
+    }
+
+    // -------------------------------------------------------------------------
+    // Users collection
+    // -------------------------------------------------------------------------
     match /users/{userId} {
+      // TODO: allow read, write: if isAuthenticated() && request.auth.uid == userId;
       allow read, write: if true;
     }
 
-    // Groups: readable and writable by anyone (pilot — no auth)
+    // -------------------------------------------------------------------------
+    // Groups collection
+    // -------------------------------------------------------------------------
     match /groups/{groupId} {
+      // TODO: allow read: if isMemberOfGroup(groupId);
+      // TODO: allow create: if isAuthenticated();
+      // TODO: allow update, delete: if isMemberOfGroup(groupId);
       allow read, write: if true;
 
       // Households subcollection
       match /households/{householdId} {
+        // TODO: allow read: if isMemberOfGroup(groupId);
+        // TODO: allow write: if isAuthenticated() && request.auth.uid == householdId;
         allow read, write: if true;
       }
 
       // Items subcollection
       match /items/{itemId} {
+        // TODO: allow read, write: if isMemberOfGroup(groupId);
         allow read, write: if true;
       }
 
       // Trips subcollection
       match /trips/{tripId} {
+        // TODO: allow read, write: if isMemberOfGroup(groupId);
         allow read, write: if true;
       }
     }
