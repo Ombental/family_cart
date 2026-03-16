@@ -43,6 +43,7 @@ import { OfflineBanner } from "@/components/shopper/OfflineBanner";
 import { GroceryList } from "@/components/list/GroceryList";
 import { ItemRow } from "@/components/list/ItemRow";
 import { useGroupedItems } from "@/hooks/useGroupedItems";
+import { useDepartmentCatalog } from "@/hooks/useDepartmentCatalog";
 
 // ---------------------------------------------------------------------------
 // Test data factories
@@ -60,6 +61,7 @@ function buildItem(overrides: Partial<Item> = {}): Item {
     householdId: "household-1",
     status: "pending",
     createdAt: now,
+    department: "",
     addedDuringTripId: null,
     deleted: false,
     deletedAt: null,
@@ -674,5 +676,94 @@ describe("US-13: ShopperGroupCard", () => {
     expect(screen.getByText("1 household")).toBeInTheDocument();
     // Sub-row with household name
     expect(screen.getByText("Smith Family")).toBeInTheDocument();
+  });
+});
+
+// =========================================================================
+// US-DC-04: useDepartmentCatalog HOOK
+// =========================================================================
+
+describe("US-DC-04: useDepartmentCatalog hook", () => {
+  it("extracts unique departments sorted alphabetically", () => {
+    const items = [
+      buildItem({ id: "1", name: "Milk", department: "Dairy" }),
+      buildItem({ id: "2", name: "Bread", department: "Bakery" }),
+      buildItem({ id: "3", name: "Cheese", department: "Dairy" }),
+      buildItem({ id: "4", name: "Apples", department: "Produce" }),
+    ];
+
+    const { result } = renderHook(() => useDepartmentCatalog(items));
+
+    expect(result.current).toEqual(["Bakery", "Dairy", "Produce"]);
+  });
+
+  it("excludes empty department strings", () => {
+    const items = [
+      buildItem({ id: "1", name: "Milk", department: "Dairy" }),
+      buildItem({ id: "2", name: "Stuff", department: "" }),
+    ];
+
+    const { result } = renderHook(() => useDepartmentCatalog(items));
+
+    expect(result.current).toEqual(["Dairy"]);
+  });
+
+  it("returns empty array when no departments", () => {
+    const items = [
+      buildItem({ id: "1", name: "Milk", department: "" }),
+    ];
+
+    const { result } = renderHook(() => useDepartmentCatalog(items));
+
+    expect(result.current).toEqual([]);
+  });
+});
+
+// =========================================================================
+// US-DC-03: useGroupedItems with department sorting
+// =========================================================================
+
+describe("US-DC-03: useGroupedItems department sorting", () => {
+  const householdMap = new Map<string, Household>([
+    ["household-1", { id: "household-1", name: "Smith Family", color: "#6366f1" }],
+  ]);
+
+  it("sorts by department alphabetically, then by name within department", () => {
+    const items = [
+      buildItem({ id: "1", name: "Cheese", department: "Dairy", householdId: "household-1" }),
+      buildItem({ id: "2", name: "Bread", department: "Bakery", householdId: "household-1" }),
+      buildItem({ id: "3", name: "Milk", department: "Dairy", householdId: "household-1" }),
+      buildItem({ id: "4", name: "Rolls", department: "Bakery", householdId: "household-1" }),
+    ];
+
+    const { result } = renderHook(() => useGroupedItems(items, householdMap, "department"));
+
+    const names = result.current.pendingGroups.map((g) => g.canonicalName);
+    expect(names).toEqual(["Bread", "Rolls", "Cheese", "Milk"]);
+  });
+
+  it("places uncategorized items (empty department) last", () => {
+    const items = [
+      buildItem({ id: "1", name: "Milk", department: "Dairy", householdId: "household-1" }),
+      buildItem({ id: "2", name: "Mystery", department: "", householdId: "household-1" }),
+      buildItem({ id: "3", name: "Bread", department: "Bakery", householdId: "household-1" }),
+    ];
+
+    const { result } = renderHook(() => useGroupedItems(items, householdMap, "department"));
+
+    const names = result.current.pendingGroups.map((g) => g.canonicalName);
+    expect(names).toEqual(["Bread", "Milk", "Mystery"]);
+  });
+
+  it("defaults to alphabetical sort", () => {
+    const items = [
+      buildItem({ id: "1", name: "Cheese", department: "Dairy", householdId: "household-1" }),
+      buildItem({ id: "2", name: "Bread", department: "Bakery", householdId: "household-1" }),
+    ];
+
+    const { result } = renderHook(() => useGroupedItems(items, householdMap));
+
+    const names = result.current.pendingGroups.map((g) => g.canonicalName);
+    expect(names).toEqual(["Bread", "Cheese"]);
   });
 });

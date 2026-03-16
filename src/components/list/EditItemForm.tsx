@@ -10,6 +10,7 @@ import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ItemCombobox } from "./ItemCombobox";
+import { DepartmentCombobox } from "./DepartmentCombobox";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { ItemSuggestion } from "@/hooks/useItemCatalog";
 import { UNIT_OPTIONS } from "@/lib/units";
@@ -23,14 +24,19 @@ export interface EditItemFormProps {
   unit: string;
   /** Current item notes. */
   notes: string;
+  /** Current item department. */
+  department?: string;
   /** Catalog suggestions for the combobox. */
   suggestions?: ItemSuggestion[];
+  /** Department suggestions from useDepartmentCatalog. */
+  departmentSuggestions?: string[];
   /** Called with updated fields when the user saves. */
   onSave: (fields: {
     name: string;
     qty: number;
     unit: string;
     notes: string;
+    department: string;
   }) => Promise<void>;
   /** Called when the user cancels editing. */
   onCancel: () => void;
@@ -41,7 +47,9 @@ export function EditItemForm({
   qty: initialQty,
   unit: initialUnit,
   notes: initialNotes,
+  department: initialDepartment = "",
   suggestions,
+  departmentSuggestions,
   onSave,
   onCancel,
 }: EditItemFormProps) {
@@ -50,6 +58,7 @@ export function EditItemForm({
   const [qty, setQty] = useState(initialQty);
   const [unit, setUnit] = useState(initialUnit);
   const [notes, setNotes] = useState(initialNotes);
+  const [department, setDepartment] = useState(initialDepartment);
   const [saving, setSaving] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
@@ -63,6 +72,7 @@ export function EditItemForm({
         qty,
         unit: unit.trim(),
         notes: notes.trim(),
+        department: department.trim(),
       });
     } finally {
       setSaving(false);
@@ -107,6 +117,16 @@ export function EditItemForm({
           ))}
         </select>
       </div>
+
+      {/* Department */}
+      <DepartmentCombobox
+        value={department}
+        onChange={setDepartment}
+        suggestions={departmentSuggestions ?? []}
+        disabled={saving}
+        placeholder={t("items.departmentPlaceholder")}
+        className="h-7 text-sm"
+      />
 
       <div className="flex items-center gap-2">
         {/* Notes */}

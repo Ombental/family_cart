@@ -15,13 +15,15 @@ interface GroceryListProps {
   /** ID of the item currently being edited (renders EditItemForm inline). */
   editingItemId?: string | null;
   /** Called when the user saves an inline edit. */
-  onEditSave?: (item: Item, fields: { name: string; qty: number; unit: string; notes: string }) => Promise<void>;
+  onEditSave?: (item: Item, fields: { name: string; qty: number; unit: string; notes: string; department: string }) => Promise<void>;
   /** Called when the user cancels an inline edit. */
   onEditCancel?: () => void;
   /** Optional tap-to-toggle handler for check-off (US-08). */
   onToggleStatus?: (item: Item) => void;
   /** Catalog suggestions for the inline edit combobox. */
   suggestions?: ItemSuggestion[];
+  /** Department suggestions for the inline edit combobox. */
+  departmentSuggestions?: string[];
 }
 
 /**
@@ -43,6 +45,7 @@ export function GroceryList({
   onEditCancel,
   onToggleStatus,
   suggestions,
+  departmentSuggestions,
 }: GroceryListProps) {
   const { t } = useLanguage();
   const [activeFilter, setActiveFilter] = useState<string | null>(null); // null = "All"
@@ -141,6 +144,7 @@ export function GroceryList({
           onEditCancel={onEditCancel}
           onToggleStatus={onToggleStatus}
           suggestions={suggestions}
+          departmentSuggestions={departmentSuggestions}
         />
       )}
 
@@ -182,15 +186,17 @@ function FlatView({
   onEditCancel,
   onToggleStatus,
   suggestions,
+  departmentSuggestions,
 }: {
   items: Item[];
   householdMap: Map<string, Household>;
   editControls?: (item: Item) => ReactNode;
   editingItemId?: string | null;
-  onEditSave?: (item: Item, fields: { name: string; qty: number; unit: string; notes: string }) => Promise<void>;
+  onEditSave?: (item: Item, fields: { name: string; qty: number; unit: string; notes: string; department: string }) => Promise<void>;
   onEditCancel?: () => void;
   onToggleStatus?: (item: Item) => void;
   suggestions?: ItemSuggestion[];
+  departmentSuggestions?: string[];
 }) {
   return (
     <div>
@@ -202,7 +208,9 @@ function FlatView({
             qty={item.qty}
             unit={item.unit}
             notes={item.notes}
+            department={item.department}
             suggestions={suggestions}
+            departmentSuggestions={departmentSuggestions}
             onSave={(fields) => onEditSave(item, fields)}
             onCancel={onEditCancel}
           />

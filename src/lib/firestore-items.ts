@@ -33,6 +33,7 @@ export interface AddItemParams {
   qty: number;
   unit: string;
   notes: string;
+  department?: string;
   householdId: string;
   addedDuringTripId?: string | null;
 }
@@ -44,7 +45,7 @@ export interface AddItemParams {
  * and createdAt set via serverTimestamp().
  */
 export async function addItem(params: AddItemParams): Promise<string> {
-  const { groupId, name, qty, unit, notes, householdId, addedDuringTripId } =
+  const { groupId, name, qty, unit, notes, department, householdId, addedDuringTripId } =
     params;
 
   const itemsRef = collection(db, "groups", groupId, "items");
@@ -53,6 +54,7 @@ export async function addItem(params: AddItemParams): Promise<string> {
     qty,
     unit,
     notes,
+    department: department ?? "",
     householdId,
     status: "pending",
     createdAt: serverTimestamp(),
@@ -76,6 +78,7 @@ export interface UpdateItemParams {
   qty?: number;
   unit?: string;
   notes?: string;
+  department?: string;
 }
 
 /**
@@ -104,6 +107,7 @@ export async function updateItem(params: UpdateItemParams): Promise<void> {
   if (fields.qty !== undefined) update.qty = fields.qty;
   if (fields.unit !== undefined) update.unit = fields.unit;
   if (fields.notes !== undefined) update.notes = fields.notes;
+  if (fields.department !== undefined) update.department = fields.department;
 
   if (Object.keys(update).length === 0) return;
 
@@ -270,6 +274,7 @@ export function subscribeToItems(
           qty: data.qty,
           unit: data.unit,
           notes: data.notes,
+          department: data.department ?? "",
           householdId: data.householdId,
           status: data.status,
           createdAt: data.createdAt,

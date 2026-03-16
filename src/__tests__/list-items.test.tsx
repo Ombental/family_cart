@@ -55,6 +55,7 @@ function buildItem(overrides: Partial<Item> = {}): Item {
     householdId: "household-1",
     status: "pending",
     createdAt: now,
+    department: "",
     addedDuringTripId: null,
     deleted: false,
     deletedAt: null,
@@ -114,6 +115,7 @@ describe("US-02: AddItemForm", () => {
         qty: 12,
         unit: "pcs",
         notes: "",
+        department: "",
         addedDuringTripId: null,
       });
     });
@@ -347,6 +349,7 @@ describe("US-04: EditItemForm", () => {
         qty: 2,
         unit: "gallons",
         notes: "",
+        department: "",
       });
     });
   });

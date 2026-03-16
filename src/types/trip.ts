@@ -11,6 +11,7 @@ export interface PurchasedItemSnapshot {
   name: string;
   qty: number;
   unit: string;
+  department: string;
   householdId: string;
 }
 

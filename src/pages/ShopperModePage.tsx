@@ -12,9 +12,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useGroup } from "@/hooks/useGroup";
 import { useItemCatalog } from "@/hooks/useItemCatalog";
+import { useDepartmentCatalog } from "@/hooks/useDepartmentCatalog";
 import { useGroupedItems } from "@/hooks/useGroupedItems";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { Household } from "@/types/group";
+import type { ItemGroup } from "@/types/item-group";
 
 /**
  * Full-page Shopper Mode experience.
@@ -49,16 +51,21 @@ export function ShopperModePage() {
   } = useItems(groupId, householdId);
 
   const { suggestions } = useItemCatalog(groupId, items);
+  const departmentSuggestions = useDepartmentCatalog(items);
 
   const [completing, setCompleting] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [sortBy, setSortBy] = useState<"alphabetical" | "department">(() => {
+    const stored = localStorage.getItem("shopper-sort");
+    return stored === "department" ? "department" : "alphabetical";
+  });
 
   const householdMap = useMemo(
     () => new Map<string, Household>(households.map((h) => [h.id, h])),
     [households]
   );
 
-  const { pendingGroups, boughtGroups } = useGroupedItems(items, householdMap);
+  const { pendingGroups, boughtGroups } = useGroupedItems(items, householdMap, sortBy);
 
   const handleCompleteTrip = useCallback(async () => {
     setCompleting(true);
@@ -83,6 +90,11 @@ export function ShopperModePage() {
     },
     [toggleItemStatus]
   );
+
+  const handleSortChange = useCallback((newSort: "alphabetical" | "department") => {
+    setSortBy(newSort);
+    localStorage.setItem("shopper-sort", newSort);
+  }, []);
 
   const handleBack = useCallback(() => {
     navigate(`/group/${groupId}`);
@@ -138,6 +150,32 @@ export function ShopperModePage() {
         </p>
       </div>
 
+      {/* ---- Sort toggle ---- */}
+      <div className="flex gap-1 px-4 pt-3">
+        <button
+          type="button"
+          onClick={() => handleSortChange("alphabetical")}
+          className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+            sortBy === "alphabetical"
+              ? "bg-[#0d74ce] text-white"
+              : "bg-[#e6f4fe] text-[#0d74ce]"
+          }`}
+        >
+          {t("shopper.sortAlphabetical")}
+        </button>
+        <button
+          type="button"
+          onClick={() => handleSortChange("department")}
+          className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+            sortBy === "department"
+              ? "bg-[#0d74ce] text-white"
+              : "bg-[#e6f4fe] text-[#0d74ce]"
+          }`}
+        >
+          {t("shopper.sortDepartment")}
+        </button>
+      </div>
+
       {/* ---- Offline banner (US-08-T06) ---- */}
       <div className="px-4 pt-3">
         <OfflineBanner isOnline={isOnline} />
@@ -151,6 +189,7 @@ export function ShopperModePage() {
             disabled={!isOnline}
             addedDuringTripId={activeTrip.id}
             suggestions={suggestions}
+            departmentSuggestions={departmentSuggestions}
           />
         </div>
       )}
@@ -171,15 +210,14 @@ export function ShopperModePage() {
             {pendingGroups.length !== 1 ? t("shopper.stillNeededPlural", { count: pendingGroups.length }) : t("shopper.stillNeeded", { count: pendingGroups.length })}
           </h3>
           <div className="space-y-2 px-4">
-            {pendingGroups.map((group) => (
-              <ShopperGroupCard
-                key={group.key}
-                group={group}
-                householdMap={householdMap}
-                activeTripId={activeTrip.id}
-                onToggle={handleToggle}
-              />
-            ))}
+            <GroupsWithDepartmentHeaders
+              groups={pendingGroups}
+              sortBy={sortBy}
+              householdMap={householdMap}
+              activeTripId={activeTrip.id}
+              onToggle={handleToggle}
+              t={t}
+            />
           </div>
         </div>
       )}
@@ -191,15 +229,14 @@ export function ShopperModePage() {
             {boughtGroups.length !== 1 ? t("shopper.inBasketPlural", { count: boughtGroups.length }) : t("shopper.inBasket", { count: boughtGroups.length })}
           </h3>
           <div className="space-y-2 px-4">
-            {boughtGroups.map((group) => (
-              <ShopperGroupCard
-                key={group.key}
-                group={group}
-                householdMap={householdMap}
-                activeTripId={activeTrip.id}
-                onToggle={handleToggle}
-              />
-            ))}
+            <GroupsWithDepartmentHeaders
+              groups={boughtGroups}
+              sortBy={sortBy}
+              householdMap={householdMap}
+              activeTripId={activeTrip.id}
+              onToggle={handleToggle}
+              t={t}
+            />
           </div>
         </div>
       )}
@@ -234,4 +271,73 @@ export function ShopperModePage() {
       </div>
     </div>
   );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Helper: render groups with optional department section headers      */
+/* ------------------------------------------------------------------ */
+
+function GroupsWithDepartmentHeaders({
+  groups,
+  sortBy,
+  householdMap,
+  activeTripId,
+  onToggle,
+  t,
+}: {
+  groups: ItemGroup[];
+  sortBy: "alphabetical" | "department";
+  householdMap: Map<string, Household>;
+  activeTripId: string;
+  onToggle: (itemId: string) => Promise<void>;
+  t: (key: string, params?: Record<string, string | number>) => string;
+}) {
+  if (sortBy !== "department") {
+    return (
+      <>
+        {groups.map((group) => (
+          <ShopperGroupCard
+            key={group.key}
+            group={group}
+            householdMap={householdMap}
+            activeTripId={activeTripId}
+            onToggle={onToggle}
+          />
+        ))}
+      </>
+    );
+  }
+
+  // Insert department headers via flatMap detecting transitions
+  let lastDept: string | null = null;
+  const elements: React.ReactNode[] = [];
+
+  for (const group of groups) {
+    const dept = group.department || "";
+    const headerLabel = dept || t("items.uncategorized");
+
+    if (dept !== lastDept) {
+      elements.push(
+        <div
+          key={`dept-header-${headerLabel}`}
+          className="text-xs font-semibold text-[#0d74ce] uppercase tracking-wide pt-2 pb-0.5 border-b border-[#e6f4fe] mb-1"
+        >
+          {headerLabel}
+        </div>
+      );
+      lastDept = dept;
+    }
+
+    elements.push(
+      <ShopperGroupCard
+        key={group.key}
+        group={group}
+        householdMap={householdMap}
+        activeTripId={activeTripId}
+        onToggle={onToggle}
+      />
+    );
+  }
+
+  return <>{elements}</>;
 }

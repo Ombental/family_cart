@@ -8,6 +8,7 @@ export interface ItemSuggestion {
   qty: number;
   unit: string;
   notes: string;
+  department: string;
   frequency: number;
 }
 
@@ -16,6 +17,7 @@ interface CatalogEntry {
   qty: number;
   unit: string;
   notes: string;
+  department: string;
   frequency: number;
   fromCurrentItems: boolean;
 }
@@ -36,6 +38,7 @@ function buildCatalog(
       existing.qty = item.qty;
       existing.unit = item.unit;
       existing.notes = item.notes;
+      existing.department = item.department;
       existing.name = item.name;
       existing.fromCurrentItems = true;
     } else {
@@ -44,6 +47,7 @@ function buildCatalog(
         qty: item.qty,
         unit: item.unit,
         notes: item.notes,
+        department: item.department,
         frequency: 1,
         fromCurrentItems: true,
       });
@@ -61,6 +65,7 @@ function buildCatalog(
         if (!existing.fromCurrentItems) {
           existing.qty = pi.qty;
           existing.unit = pi.unit;
+          existing.department = pi.department ?? "";
           existing.name = pi.name;
         }
       } else {
@@ -69,6 +74,7 @@ function buildCatalog(
           qty: pi.qty,
           unit: pi.unit,
           notes: "",
+          department: pi.department ?? "",
           frequency: 1,
           fromCurrentItems: false,
         });
@@ -78,7 +84,7 @@ function buildCatalog(
 
   // Sort: frequency desc, then name asc (case-insensitive)
   const suggestions: ItemSuggestion[] = Array.from(map.values()).map(
-    ({ name, qty, unit, notes, frequency }) => ({ name, qty, unit, notes, frequency })
+    ({ name, qty, unit, notes, department, frequency }) => ({ name, qty, unit, notes, department, frequency })
   );
 
   suggestions.sort((a, b) => {

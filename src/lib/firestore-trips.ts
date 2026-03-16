@@ -173,6 +173,7 @@ export async function completeTrip(params: CompleteTripParams): Promise<void> {
       name: data.name,
       qty: data.qty,
       unit: data.unit,
+      department: data.department ?? "",
       householdId: data.householdId,
     };
   });
