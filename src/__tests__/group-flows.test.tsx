@@ -64,7 +64,6 @@ vi.mock("@/lib/firestore-groups", () => ({
 }));
 
 // We need to dynamically import JoinError from the mock for throw usage
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const getJoinError = async () => {
   const mod = await import("@/lib/firestore-groups");
   return mod.JoinError;
