@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, ShoppingCart, Settings, LogOut, Loader2, ClipboardList, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -146,11 +146,15 @@ export function GroupView({ group, households }: GroupViewProps) {
     }
   }, [group.id, user, navigate]);
 
-  // Auto-navigate to Shopper Mode when join request is approved
+  // Auto-navigate to Shopper Mode when join request *transitions* to approved.
+  // Only fires on the pending→approved transition, not when already approved on mount
+  // (otherwise pressing Back from ShopperMode would redirect right back).
+  const prevJoinStatus = useRef(joinRequestStatus);
   useEffect(() => {
-    if (joinRequestStatus === "approved") {
+    if (prevJoinStatus.current === "pending" && joinRequestStatus === "approved") {
       navigate(`/group/${group.id}/shopper`);
     }
+    prevJoinStatus.current = joinRequestStatus;
   }, [joinRequestStatus, navigate, group.id]);
 
   const handleRequestToJoin = useCallback(async () => {
