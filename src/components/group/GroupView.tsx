@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, ShoppingCart, Settings, LogOut, Loader2, ClipboardList, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,8 @@ import { useTrip } from "@/hooks/useTrip";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useItemCatalog } from "@/hooks/useItemCatalog";
 import { useDepartmentCatalog } from "@/hooks/useDepartmentCatalog";
+import { useJoinRequestStatus } from "@/hooks/useJoinRequestStatus";
+import { useJoinRequests } from "@/hooks/useJoinRequests";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { Group, Household } from "@/types/group";
 import type { Item } from "@/types/item";
@@ -80,7 +82,10 @@ export function GroupView({ group, households }: GroupViewProps) {
     startTrip,
     isShopperMode,
     isCurrentHouseholdShopping,
-  } = useTrip(group.id, householdId, householdName, user?.displayName ?? "");
+    isActiveShopper,
+  } = useTrip(group.id, householdId, householdName, user?.displayName ?? "", user?.id);
+  const { requestToJoin } = useJoinRequests(group.id, activeTrip?.id);
+  const { status: joinRequestStatus } = useJoinRequestStatus(group.id, activeTrip?.id, user?.id);
 
   const { suggestions } = useItemCatalog(group.id, items);
   const departmentSuggestions = useDepartmentCatalog(items);
@@ -95,6 +100,7 @@ export function GroupView({ group, households }: GroupViewProps) {
   const [renameSaving, setRenameSaving] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [requestingJoin, setRequestingJoin] = useState(false);
 
   // Per-household item counts for the summary card
   const householdCounts = useMemo(() => {
@@ -139,6 +145,30 @@ export function GroupView({ group, households }: GroupViewProps) {
       setDeleting(false);
     }
   }, [group.id, user, navigate]);
+
+  // Auto-navigate to Shopper Mode when join request is approved
+  useEffect(() => {
+    if (joinRequestStatus === "approved") {
+      navigate(`/group/${group.id}/shopper`);
+    }
+  }, [joinRequestStatus, navigate, group.id]);
+
+  const handleRequestToJoin = useCallback(async () => {
+    if (!user) return;
+    setRequestingJoin(true);
+    try {
+      await requestToJoin({
+        userId: user.id,
+        userName: user.displayName,
+        householdId,
+        householdName,
+      });
+    } catch (err) {
+      console.error("Failed to request join:", err);
+    } finally {
+      setRequestingJoin(false);
+    }
+  }, [requestToJoin, user, householdId, householdName]);
 
   const handleStartShopping = useCallback(async () => {
     // If current household already has an active trip, go straight to shopper mode
@@ -284,6 +314,7 @@ export function GroupView({ group, households }: GroupViewProps) {
         open={conflictDialogOpen}
         onOpenChange={setConflictDialogOpen}
         shopperHouseholdName={conflictHouseholdName}
+        onRequestToJoin={handleRequestToJoin}
       />
 
       {/* Quick actions */}
@@ -311,7 +342,7 @@ export function GroupView({ group, households }: GroupViewProps) {
       {/* Shopper Mode button / status */}
       {!tripLoading && (
         <div className="space-y-2">
-          {isShopperMode && !isCurrentHouseholdShopping && (
+          {isShopperMode && !isActiveShopper && joinRequestStatus === "none" && (
             <p className="text-sm text-muted-foreground px-1">
               <ShoppingCart className="inline h-4 w-4 me-1 align-text-bottom" />
               {t("group.shoppingInProgress")}{" "}
@@ -321,21 +352,83 @@ export function GroupView({ group, households }: GroupViewProps) {
             </p>
           )}
 
-          <Button
-            className="w-full gap-2"
-            size="lg"
-            onClick={handleStartShopping}
-            disabled={startingTrip}
-          >
-            {startingTrip ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
+          {/* Pending join request */}
+          {isShopperMode && joinRequestStatus === "pending" && (
+            <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+              {t("group.waitingForApproval")}
+            </div>
+          )}
+
+          {/* Rejected join request */}
+          {isShopperMode && joinRequestStatus === "rejected" && (
+            <div className="space-y-2">
+              <p className="text-sm text-destructive px-1">
+                {t("group.joinRequestDeclined")}
+              </p>
+              <Button
+                className="w-full gap-2"
+                size="lg"
+                variant="outline"
+                onClick={handleRequestToJoin}
+                disabled={requestingJoin}
+              >
+                {requestingJoin ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <ShoppingCart className="h-5 w-5" />
+                )}
+                {t("group.requestAgain")}
+              </Button>
+            </div>
+          )}
+
+          {/* Active shopper or trip starter — continue shopping */}
+          {isActiveShopper && (
+            <Button
+              className="w-full gap-2"
+              size="lg"
+              onClick={() => navigate(`/group/${group.id}/shopper`)}
+            >
               <ShoppingCart className="h-5 w-5" />
-            )}
-            {isCurrentHouseholdShopping
-              ? t("group.continueShopping")
-              : t("group.startShopping")}
-          </Button>
+              {t("group.continueShopping")}
+            </Button>
+          )}
+
+          {/* No active trip — start shopping */}
+          {!isShopperMode && (
+            <Button
+              className="w-full gap-2"
+              size="lg"
+              onClick={handleStartShopping}
+              disabled={startingTrip}
+            >
+              {startingTrip ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <ShoppingCart className="h-5 w-5" />
+              )}
+              {t("group.startShopping")}
+            </Button>
+          )}
+
+          {/* Active trip, not a shopper, no pending request — request to join */}
+          {isShopperMode && !isActiveShopper && joinRequestStatus === "none" && (
+            <Button
+              className="w-full gap-2"
+              size="lg"
+              variant="outline"
+              onClick={handleRequestToJoin}
+              disabled={requestingJoin}
+            >
+              {requestingJoin ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Users className="h-5 w-5" />
+              )}
+              {t("group.requestToJoin")}
+            </Button>
+          )}
         </div>
       )}
 

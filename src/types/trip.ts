@@ -49,4 +49,19 @@ export interface Trip {
   totalAmount?: number;
   completedByUserId?: string;
   split?: boolean;
+  activeShoppers: ActiveShopper[];
+}
+
+/**
+ * A shopper participating in a collaborative trip.
+ *
+ * The trip starter is auto-added as the first active shopper.
+ * Additional shoppers are added when their join requests are approved.
+ */
+export interface ActiveShopper {
+  userId: string;
+  userName: string;
+  householdId: string;
+  householdName: string;
+  joinedAt: Timestamp;
 }

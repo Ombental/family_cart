@@ -32,8 +32,12 @@ const mockBatch = {
   commit: vi.fn().mockResolvedValue(undefined),
 };
 const mockWriteBatch = vi.fn(() => mockBatch);
+const mockTimestamp = {
+  now: vi.fn(() => ({ seconds: 9999, nanoseconds: 0 })),
+};
 
 vi.mock("firebase/firestore", () => ({
+  Timestamp: { now: () => mockTimestamp.now() },
   collection: (...args: unknown[]) => mockCollection(...args),
   doc: (...args: unknown[]) => mockDoc(...args),
   addDoc: (...args: unknown[]) => mockAddDoc(...args),
@@ -100,6 +104,7 @@ describe("createTrip", () => {
       groupId: "group-abc",
       startedByHouseholdId: "household-1",
       startedByHouseholdName: "Smith Family",
+      startedByUserId: "user-1",
     });
 
     // Verify collection was called with correct path
@@ -118,6 +123,15 @@ describe("createTrip", () => {
       startedByHouseholdId: "household-1",
       startedByHouseholdName: "Smith Family",
       purchasedItems: [],
+      activeShoppers: [
+        {
+          userId: "user-1",
+          userName: "",
+          householdId: "household-1",
+          householdName: "Smith Family",
+          joinedAt: { seconds: 9999, nanoseconds: 0 },
+        },
+      ],
     });
 
     // Verify result shape
@@ -133,6 +147,7 @@ describe("createTrip", () => {
       startedByHouseholdId: "household-1",
       startedByHouseholdName: "Smith Family",
       startedByUserName: "Alice",
+      startedByUserId: "user-alice",
     });
 
     expect(mockAddDoc).toHaveBeenCalledWith("mock-collection-ref", {
@@ -143,6 +158,15 @@ describe("createTrip", () => {
       startedByHouseholdName: "Smith Family",
       startedByUserName: "Alice",
       purchasedItems: [],
+      activeShoppers: [
+        {
+          userId: "user-alice",
+          userName: "Alice",
+          householdId: "household-1",
+          householdName: "Smith Family",
+          joinedAt: { seconds: 9999, nanoseconds: 0 },
+        },
+      ],
     });
 
     expect(result).toEqual({ conflict: false, tripId: "new-trip-456" });
@@ -170,6 +194,7 @@ describe("createTrip", () => {
       groupId: "group-abc",
       startedByHouseholdId: "household-1",
       startedByHouseholdName: "Smith Family",
+      startedByUserId: "user-1",
     });
 
     // addDoc should NOT have been called
@@ -185,8 +210,13 @@ describe("createTrip", () => {
         status: "active",
         startedByHouseholdId: "household-2",
         startedByHouseholdName: "Jones Family",
+        startedByUserName: undefined,
         purchasedItems: [],
+        storeName: undefined,
+        totalAmount: undefined,
+        completedByUserId: undefined,
         split: false,
+        activeShoppers: [],
       },
     });
   });
@@ -390,7 +420,13 @@ describe("subscribeToActiveTrip", () => {
       status: "active",
       startedByHouseholdId: "household-1",
       startedByHouseholdName: "Smith Family",
+      startedByUserName: undefined,
       purchasedItems: [],
+      storeName: undefined,
+      totalAmount: undefined,
+      completedByUserId: undefined,
+      split: false,
+      activeShoppers: [],
     });
 
     // Unsubscribe function should be returned
@@ -551,10 +587,16 @@ describe("subscribeToCompletedTrips", () => {
       status: "complete",
       startedByHouseholdId: "household-1",
       startedByHouseholdName: "Smith Family",
+      startedByUserName: undefined,
       purchasedItems: [
         { name: "Milk", qty: 2, unit: "gallons", department: "Dairy", householdId: "household-1" },
         { name: "Bread", qty: 1, unit: "loaf", department: "Bakery", householdId: "household-2" },
       ],
+      storeName: undefined,
+      totalAmount: undefined,
+      completedByUserId: undefined,
+      split: false,
+      activeShoppers: [],
     });
 
     // Second trip
@@ -565,9 +607,15 @@ describe("subscribeToCompletedTrips", () => {
       status: "complete",
       startedByHouseholdId: "household-2",
       startedByHouseholdName: "Jones Family",
+      startedByUserName: undefined,
       purchasedItems: [
         { name: "Eggs", qty: 12, unit: "pcs", department: "", householdId: "household-1" },
       ],
+      storeName: undefined,
+      totalAmount: undefined,
+      completedByUserId: undefined,
+      split: false,
+      activeShoppers: [],
     });
 
     // Unsubscribe function should be returned

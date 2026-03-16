@@ -248,7 +248,13 @@ export function TripSummaryPage() {
               <span className="text-sm text-[#82827c]">{t("trips.split")}</span>
               <button
                 type="button"
-                onClick={() => toggleTripSplit(groupId!, tripId!, !trip.split)}
+                onClick={async () => {
+                  try {
+                    await toggleTripSplit(groupId!, tripId!, !trip.split);
+                  } catch (err) {
+                    console.error("Failed to toggle split:", err);
+                  }
+                }}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   trip.split ? "bg-[#30a46c]" : "bg-gray-200"
                 }`}
@@ -257,7 +263,9 @@ export function TripSummaryPage() {
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    trip.split ? "translate-x-6" : "translate-x-1"
+                    trip.split
+                      ? "translate-x-6 rtl:-translate-x-6"
+                      : "translate-x-1 rtl:-translate-x-1"
                   }`}
                 />
               </button>

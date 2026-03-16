@@ -33,6 +33,7 @@ export interface CreateTripParams {
   startedByHouseholdId: string;
   startedByHouseholdName: string;
   startedByUserName?: string;
+  startedByUserId: string;
 }
 
 export type CreateTripResult =
@@ -54,7 +55,7 @@ export type CreateTripResult =
 export async function createTrip(
   params: CreateTripParams
 ): Promise<CreateTripResult> {
-  const { groupId, startedByHouseholdId, startedByHouseholdName, startedByUserName } = params;
+  const { groupId, startedByHouseholdId, startedByHouseholdName, startedByUserName, startedByUserId } = params;
 
   const tripsRef = collection(db, "groups", groupId, "trips");
 
@@ -82,11 +83,12 @@ export async function createTrip(
       totalAmount: data.totalAmount ?? undefined,
       completedByUserId: data.completedByUserId ?? undefined,
       split: data.split ?? false,
+      activeShoppers: data.activeShoppers ?? [],
     };
     return { conflict: true, activeTrip };
   }
 
-  // No active trip — create one
+  // No active trip — create one (starter is first active shopper)
   const docRef = await addDoc(tripsRef, {
     startedAt: serverTimestamp(),
     completedAt: null,
@@ -95,6 +97,15 @@ export async function createTrip(
     startedByHouseholdName,
     ...(startedByUserName ? { startedByUserName } : {}),
     purchasedItems: [],
+    activeShoppers: [
+      {
+        userId: startedByUserId,
+        userName: startedByUserName ?? "",
+        householdId: startedByHouseholdId,
+        householdName: startedByHouseholdName,
+        joinedAt: Timestamp.now(),
+      },
+    ],
   });
 
   return { conflict: false, tripId: docRef.id };
@@ -139,6 +150,8 @@ export function subscribeToActiveTrip(
       storeName: data.storeName ?? undefined,
       totalAmount: data.totalAmount ?? undefined,
       completedByUserId: data.completedByUserId ?? undefined,
+      split: data.split ?? false,
+      activeShoppers: data.activeShoppers ?? [],
     });
   });
 }
@@ -266,6 +279,8 @@ export function subscribeToCompletedTrips(
         storeName: data.storeName ?? undefined,
         totalAmount: data.totalAmount ?? undefined,
         completedByUserId: data.completedByUserId ?? undefined,
+        split: data.split ?? false,
+        activeShoppers: data.activeShoppers ?? [],
       };
     });
     onChange(trips);

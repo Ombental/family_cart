@@ -1,8 +1,9 @@
-import { CircleAlert } from "lucide-react";
+import { CircleAlert, Users } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -14,18 +15,20 @@ interface ConflictDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   shopperHouseholdName: string;
+  onRequestToJoin?: () => void;
 }
 
 /**
  * Dialog shown when attempting to start Shopper Mode while another
  * household already has an active shopping trip (US-07 conflict).
  *
- * Single "Got it" action to dismiss — no destructive or secondary actions.
+ * Offers "Request to Join" as primary action, "Got it" as dismiss.
  */
 export function ConflictDialog({
   open,
   onOpenChange,
   shopperHouseholdName,
+  onRequestToJoin,
 }: ConflictDialogProps) {
   const { t } = useLanguage();
   return (
@@ -41,9 +44,21 @@ export function ConflictDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogAction onClick={() => onOpenChange(false)}>
+          <AlertDialogCancel onClick={() => onOpenChange(false)}>
             {t("common.gotIt")}
-          </AlertDialogAction>
+          </AlertDialogCancel>
+          {onRequestToJoin && (
+            <AlertDialogAction
+              onClick={() => {
+                onOpenChange(false);
+                onRequestToJoin();
+              }}
+              className="gap-2"
+            >
+              <Users className="h-4 w-4" />
+              {t("group.requestToJoin")}
+            </AlertDialogAction>
+          )}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

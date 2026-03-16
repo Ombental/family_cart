@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
-import { ArrowLeft, Loader2, Plus, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Bell, Check, Loader2, Plus, ShoppingCart, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OfflineBanner } from "@/components/shopper/OfflineBanner";
 import { AddItemForm } from "@/components/list/AddItemForm";
@@ -16,6 +16,13 @@ import { useDepartmentCatalog } from "@/hooks/useDepartmentCatalog";
 import { useGroupedItems } from "@/hooks/useGroupedItems";
 import { useStores } from "@/hooks/useStores";
 import { TripCompletionForm } from "@/components/shopper/TripCompletionForm";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useJoinRequests } from "@/hooks/useJoinRequests";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { Household } from "@/types/group";
 import type { ItemGroup } from "@/types/item-group";
@@ -39,11 +46,12 @@ export function ShopperModePage() {
   const { user } = useAuth();
   const { isOnline } = useOnlineStatus();
   const { households } = useGroup(groupId);
-  const { activeTrip, loading: tripLoading, completeTrip } = useTrip(
+  const { activeTrip, loading: tripLoading, completeTrip, isActiveShopper } = useTrip(
     groupId,
     householdId,
     householdName,
-    user?.displayName ?? ""
+    user?.displayName ?? "",
+    user?.id
   );
   const {
     items,
@@ -52,6 +60,7 @@ export function ShopperModePage() {
     toggleItemStatus,
   } = useItems(groupId, householdId);
 
+  const { pendingRequests, pendingCount, approve, reject } = useJoinRequests(groupId, activeTrip?.id);
   const { stores, addStore } = useStores(groupId);
   const { suggestions } = useItemCatalog(groupId, items);
   const departmentSuggestions = useDepartmentCatalog(items);
@@ -59,6 +68,7 @@ export function ShopperModePage() {
   const [completing, setCompleting] = useState(false);
   const [showCompletionForm, setShowCompletionForm] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showRequestsDialog, setShowRequestsDialog] = useState(false);
   const [sortBy, setSortBy] = useState<"alphabetical" | "department">(() => {
     const stored = localStorage.getItem("shopper-sort");
     return stored === "department" ? "department" : "alphabetical";
@@ -140,9 +150,24 @@ export function ShopperModePage() {
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h2 className="text-lg font-bold text-white uppercase tracking-wide">
+        <h2 className="text-lg font-bold text-white uppercase tracking-wide flex-1">
           {t("shopper.title")}
         </h2>
+        {isActiveShopper && (
+          <button
+            type="button"
+            onClick={() => setShowRequestsDialog(true)}
+            className="relative text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
+            aria-label={t("shopper.joinRequests")}
+          >
+            <Bell className="h-5 w-5" />
+            {pendingCount > 0 && (
+              <span className="absolute -top-0.5 -end-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                {pendingCount}
+              </span>
+            )}
+          </button>
+        )}
       </div>
 
       {/* ---- Progress bar ---- */}
@@ -270,6 +295,55 @@ export function ShopperModePage() {
           mode="complete"
         />
       )}
+
+      {/* ---- Join requests dialog ---- */}
+      <Dialog open={showRequestsDialog} onOpenChange={setShowRequestsDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("shopper.joinRequests")}</DialogTitle>
+          </DialogHeader>
+          {pendingRequests.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              {t("shopper.noRequests")}
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {pendingRequests.map((req) => (
+                <div
+                  key={req.id}
+                  className="flex items-center justify-between rounded-lg border p-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{req.userName}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {req.householdName}
+                    </p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => reject(req.id)}
+                      aria-label={t("shopper.rejectRequest")}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      className="h-8 w-8 bg-green-600 hover:bg-green-700 text-white"
+                      onClick={() => approve(req.id, req)}
+                      aria-label={t("shopper.approveRequest")}
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* ---- Bottom bar: Complete Trip + helper text ---- */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#f0f0f0] px-4 py-3 space-y-1.5 z-10">

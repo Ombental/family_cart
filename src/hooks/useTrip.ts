@@ -26,13 +26,16 @@ export interface UseTripResult {
   completeTrip: (metadata: { storeName: string; totalAmount: number; completedByUserId: string }) => Promise<void>;
   isShopperMode: boolean;
   isCurrentHouseholdShopping: boolean;
+  /** True if the current user is in the trip's activeShoppers array */
+  isActiveShopper: boolean;
 }
 
 export function useTrip(
   groupId: string | undefined,
   householdId: string,
   householdName: string,
-  userName?: string
+  userName?: string,
+  userId?: string
 ): UseTripResult {
   const [activeTrip, setActiveTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState(true);
@@ -60,8 +63,9 @@ export function useTrip(
       startedByHouseholdId: householdId,
       startedByHouseholdName: householdName,
       startedByUserName: userName,
+      startedByUserId: userId ?? "",
     });
-  }, [groupId, householdId, householdName, userName]);
+  }, [groupId, householdId, householdName, userName, userId]);
 
   const completeTrip = useCallback(async (metadata: { storeName: string; totalAmount: number; completedByUserId: string }): Promise<void> => {
     if (!groupId) throw new Error("No group selected.");
@@ -80,6 +84,11 @@ export function useTrip(
     [activeTrip, householdId]
   );
 
+  const isActiveShopper = useMemo(
+    () => activeTrip?.activeShoppers?.some((s) => s.userId === userId) ?? false,
+    [activeTrip, userId]
+  );
+
   return {
     activeTrip,
     loading,
@@ -87,5 +96,6 @@ export function useTrip(
     completeTrip,
     isShopperMode,
     isCurrentHouseholdShopping,
+    isActiveShopper,
   };
 }
