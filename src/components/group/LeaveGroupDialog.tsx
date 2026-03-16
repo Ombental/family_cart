@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LogOut, Loader2 } from "lucide-react";
+import { AlertCircle, LogOut, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,6 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface LeaveGroupDialogProps {
   groupName: string;
@@ -31,16 +32,19 @@ export function LeaveGroupDialog({
   onConfirm,
 }: LeaveGroupDialogProps) {
   const [leaving, setLeaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleLeave = async (e: React.MouseEvent) => {
     e.preventDefault();
     setLeaving(true);
+    setError(null);
     try {
       await onConfirm();
       // Dialog will unmount on navigation, but close it just in case
       onOpenChange(false);
     } catch (err) {
       console.error("Failed to leave group:", err);
+      setError("Failed to leave group. Please check your connection and try again.");
       setLeaving(false);
     }
   };
@@ -55,6 +59,14 @@ export function LeaveGroupDialog({
             This cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
         <AlertDialogFooter>
           <AlertDialogCancel disabled={leaving}>Cancel</AlertDialogCancel>
           <AlertDialogAction

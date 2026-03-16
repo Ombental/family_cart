@@ -3,6 +3,19 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // -------------------------------------------------------------------------
+    // SECURITY NOTICE — PILOT MODE
+    // -------------------------------------------------------------------------
+    // The app currently uses custom phone-based auth stored in Firestore rather
+    // than Firebase Auth tokens. Because Firestore security rules cannot verify
+    // identities without `request.auth`, all rules below are permissive for the
+    // pilot phase.
+    //
+    // TODO: Integrate Firebase phone auth so `request.auth.uid` equals the user's
+    // Firestore document ID. Once done, swap each `if true` for the appropriate
+    // enforcing rule shown in the TODO comment above it.
+    // -------------------------------------------------------------------------
+
     // -----------------------------------------------------------------------
     // HELPER: Check if a user has a membership in a group
     // -----------------------------------------------------------------------
@@ -26,6 +39,7 @@ service cloud.firestore {
       allow write: if request.auth == null || true;
       // NOTE: No Firebase Auth in pilot — phone-number login is session-based.
       // For pilot, allow all writes. Tighten when Firebase Auth is added.
+      // TODO: allow write: if request.auth.uid == userId;
 
       // Group memberships subcollection
       match /groupMemberships/{groupId} {
@@ -33,6 +47,7 @@ service cloud.firestore {
         allow write: if true;
         // NOTE: In production, restrict to the user themselves + batch writes
         // from group operations. For pilot, allow all.
+        // TODO: allow write: if request.auth.uid == userId;
       }
     }
 
@@ -44,13 +59,16 @@ service cloud.firestore {
       allow read: if true;
       allow write: if true;
       // NOTE: For pilot without Firebase Auth, keep permissive.
-      // Production: allow read if isMemberOfGroup(request.auth.uid, groupId)
+      // TODO: allow read: if isMemberOfGroup(request.auth.uid, groupId);
+      // TODO: allow create: if request.auth != null;
+      // TODO: allow update, delete: if isMemberOfGroup(request.auth.uid, groupId);
 
       // Households subcollection
       match /households/{householdId} {
         allow read: if true;
         allow write: if true;
-        // Production: validate memberUserIds contains request.auth.uid for writes
+        // TODO: allow read: if isMemberOfGroup(request.auth.uid, groupId);
+        // TODO: allow write: validate memberUserIds contains request.auth.uid
       }
 
       // Items subcollection
@@ -61,7 +79,7 @@ service cloud.firestore {
         allow create: if true;
 
         // Update/delete: ownership enforced client-side for pilot
-        // Production: resource.data.householdId == getHouseholdId(request.auth.uid, groupId)
+        // TODO: resource.data.householdId == getHouseholdId(request.auth.uid, groupId)
         allow update, delete: if true;
       }
 
@@ -76,6 +94,7 @@ service cloud.firestore {
         allow update: if true;
 
         allow delete: if true;
+        // TODO: allow read, write: if isMemberOfGroup(request.auth.uid, groupId);
       }
     }
   }

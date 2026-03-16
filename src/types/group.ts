@@ -26,8 +26,5 @@ export interface GroupMembership {
   joinedAt: Timestamp;
 }
 
-/**
- * A group with only 1 household is in "holding" state.
- * A group with 2+ households is "active".
- */
 export type GroupStatus = "holding" | "active";
+
