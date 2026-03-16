@@ -42,5 +42,6 @@ export interface Trip {
   status: "active" | "complete";
   startedByHouseholdId: string;
   startedByHouseholdName: string;
+  startedByUserName?: string;
   purchasedItems: PurchasedItemSnapshot[];
 }

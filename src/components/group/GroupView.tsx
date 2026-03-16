@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, ShoppingCart, Settings, LogOut, Loader2, ClipboardList } from "lucide-react";
+import { Users, ShoppingCart, Settings, LogOut, Loader2, ClipboardList, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -16,7 +16,25 @@ import { SyncBanner } from "@/components/list/SyncBanner";
 import { AddItemForm } from "@/components/list/AddItemForm";
 import { GroceryList } from "@/components/list/GroceryList";
 import { ItemActions } from "@/components/list/ItemActions";
-import { regenerateInviteCode, leaveGroup } from "@/lib/firestore-groups";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { regenerateInviteCode, leaveGroup, renameGroup, deleteGroup } from "@/lib/firestore-groups";
 import { deleteWithUndo } from "@/lib/delete-with-undo";
 import { useHouseholdContext } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
@@ -54,7 +72,6 @@ export function GroupView({ group, households }: GroupViewProps) {
     updateItem,
     softDeleteItem,
     undoDeleteItem,
-    toggleItemStatus,
   } = useItems(group.id, householdId);
   const {
     activeTrip,
@@ -62,7 +79,7 @@ export function GroupView({ group, households }: GroupViewProps) {
     startTrip,
     isShopperMode,
     isCurrentHouseholdShopping,
-  } = useTrip(group.id, householdId, householdName);
+  } = useTrip(group.id, householdId, householdName, user?.displayName ?? "");
 
   const { suggestions } = useItemCatalog(group.id, items);
 
@@ -71,6 +88,11 @@ export function GroupView({ group, households }: GroupViewProps) {
   const [conflictDialogOpen, setConflictDialogOpen] = useState(false);
   const [conflictHouseholdName, setConflictHouseholdName] = useState("");
   const [startingTrip, setStartingTrip] = useState(false);
+  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [renameSaving, setRenameSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Per-household item counts for the summary card
   const householdCounts = useMemo(() => {
@@ -89,6 +111,32 @@ export function GroupView({ group, households }: GroupViewProps) {
     await leaveGroup({ groupId: group.id, userId: user!.id, householdId });
     navigate("/", { replace: true });
   }, [group.id, user, householdId, navigate]);
+
+  const handleRenameGroup = useCallback(async () => {
+    const trimmed = newGroupName.trim();
+    if (!trimmed || trimmed.length > 50) return;
+    setRenameSaving(true);
+    try {
+      await renameGroup({ groupId: group.id, newName: trimmed });
+      setRenameDialogOpen(false);
+    } catch (err) {
+      console.error("Failed to rename group:", err);
+    } finally {
+      setRenameSaving(false);
+    }
+  }, [group.id, newGroupName]);
+
+  const handleDeleteGroup = useCallback(async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setDeleting(true);
+    try {
+      await deleteGroup({ groupId: group.id, userId: user!.id });
+      navigate("/", { replace: true });
+    } catch (err) {
+      console.error("Failed to delete group:", err);
+      setDeleting(false);
+    }
+  }, [group.id, user, navigate]);
 
   const handleStartShopping = useCallback(async () => {
     // If current household already has an active trip, go straight to shopper mode
@@ -134,6 +182,24 @@ export function GroupView({ group, households }: GroupViewProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem
+              onSelect={() => {
+                setNewGroupName(group.name);
+                setRenameDialogOpen(true);
+              }}
+            >
+              <Pencil className="h-4 w-4 me-2" />
+              {t("group.renameGroup")}
+            </DropdownMenuItem>
+            {group.createdByUserId === user?.id && (
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onSelect={() => setDeleteDialogOpen(true)}
+              >
+                <Trash2 className="h-4 w-4 me-2" />
+                {t("group.deleteGroup")}
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem
               className="text-destructive focus:text-destructive"
               onSelect={() => setLeaveDialogOpen(true)}
             >
@@ -151,6 +217,65 @@ export function GroupView({ group, households }: GroupViewProps) {
         onOpenChange={setLeaveDialogOpen}
         onConfirm={handleLeaveGroup}
       />
+
+      {/* Rename group dialog */}
+      <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("group.renameGroupTitle")}</DialogTitle>
+          </DialogHeader>
+          <Input
+            value={newGroupName}
+            onChange={(e) => setNewGroupName(e.target.value)}
+            maxLength={50}
+            autoFocus
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameDialogOpen(false)} disabled={renameSaving}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              onClick={handleRenameGroup}
+              disabled={renameSaving || !newGroupName.trim()}
+            >
+              {renameSaving ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : null}
+              {t("common.save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete group confirmation dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("group.deleteGroupTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("group.deleteGroupDesc")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={deleting}
+              onClick={handleDeleteGroup}
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin me-2" />
+                  {t("group.deleting")}
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 me-2" />
+                  {t("group.deleteGroup")}
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Trip conflict dialog */}
       <ConflictDialog
@@ -261,7 +386,6 @@ export function GroupView({ group, households }: GroupViewProps) {
               households={households}
               suggestions={suggestions}
               editingItemId={editingItemId}
-              onToggleStatus={(item: Item) => toggleItemStatus(item.id)}
               onEditSave={async (item: Item, fields) => {
                 await updateItem({ itemId: item.id, ...fields });
                 setEditingItemId(null);

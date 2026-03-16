@@ -66,6 +66,15 @@ const en: Record<string, string> = {
   "group.shoppingInProgress": "Shopping in progress by",
   "group.startShopping": "Start Shopping",
   "group.continueShopping": "Continue Shopping",
+  "group.renameGroup": "Rename Group",
+  "group.renameGroupTitle": "Rename Group",
+  "group.renameFailed": "Failed to rename group.",
+  "group.deleteGroup": "Delete Group",
+  "group.deleteGroupTitle": "Delete Group",
+  "group.deleteGroupDesc": "This will permanently delete the group, all items, trips, and remove all members. This cannot be undone.",
+  "group.deleteFailed": "Failed to delete group.",
+  "group.deleting": "Deleting...",
+  "group.activeTripBlock": "Cannot delete group while a shopping trip is active.",
 
   // ---- create group ----
   "group.createTitle": "Create a Family Group",
@@ -321,6 +330,15 @@ const he: Record<string, string> = {
   "group.shoppingInProgress": "\u05E7\u05E0\u05D9\u05D5\u05EA \u05D1\u05E2\u05D9\u05E6\u05D5\u05DE\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9",
   "group.startShopping": "\u05D4\u05EA\u05D7\u05DC \u05E7\u05E0\u05D9\u05D5\u05EA",
   "group.continueShopping": "\u05D4\u05DE\u05E9\u05DA \u05E7\u05E0\u05D9\u05D5\u05EA",
+  "group.renameGroup": "\u05E9\u05E0\u05D4 \u05E9\u05DD \u05E7\u05D1\u05D5\u05E6\u05D4",
+  "group.renameGroupTitle": "\u05E9\u05E0\u05D4 \u05E9\u05DD \u05E7\u05D1\u05D5\u05E6\u05D4",
+  "group.renameFailed": "\u05E9\u05D9\u05E0\u05D5\u05D9 \u05E9\u05DD \u05D4\u05E7\u05D1\u05D5\u05E6\u05D4 \u05E0\u05DB\u05E9\u05DC.",
+  "group.deleteGroup": "\u05DE\u05D7\u05E7 \u05E7\u05D1\u05D5\u05E6\u05D4",
+  "group.deleteGroupTitle": "\u05DE\u05D7\u05D9\u05E7\u05EA \u05E7\u05D1\u05D5\u05E6\u05D4",
+  "group.deleteGroupDesc": "\u05E4\u05E2\u05D5\u05DC\u05D4 \u05D6\u05D5 \u05EA\u05DE\u05D7\u05E7 \u05DC\u05E6\u05DE\u05D9\u05EA\u05D5\u05EA \u05D0\u05EA \u05D4\u05E7\u05D1\u05D5\u05E6\u05D4, \u05DB\u05DC \u05D4\u05E4\u05E8\u05D9\u05D8\u05D9\u05DD, \u05D4\u05E7\u05E0\u05D9\u05D5\u05EA \u05D5\u05EA\u05E1\u05D9\u05E8 \u05D0\u05EA \u05DB\u05DC \u05D4\u05D7\u05D1\u05E8\u05D9\u05DD. \u05DC\u05D0 \u05E0\u05D9\u05EA\u05DF \u05DC\u05D1\u05D8\u05DC.",
+  "group.deleteFailed": "\u05DE\u05D7\u05D9\u05E7\u05EA \u05D4\u05E7\u05D1\u05D5\u05E6\u05D4 \u05E0\u05DB\u05E9\u05DC\u05D4.",
+  "group.deleting": "\u05DE\u05D5\u05D7\u05E7...",
+  "group.activeTripBlock": "\u05DC\u05D0 \u05E0\u05D9\u05EA\u05DF \u05DC\u05DE\u05D7\u05D5\u05E7 \u05E7\u05D1\u05D5\u05E6\u05D4 \u05D1\u05D6\u05DE\u05DF \u05E9\u05E7\u05E0\u05D9\u05D4 \u05E4\u05E2\u05D9\u05DC\u05D4.",
 
   // ---- create group ----
   "group.createTitle": "\u05E6\u05D5\u05E8 \u05E7\u05D1\u05D5\u05E6\u05D4 \u05DE\u05E9\u05E4\u05D7\u05EA\u05D9\u05EA",

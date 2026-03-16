@@ -31,6 +31,7 @@ export interface CreateTripParams {
   groupId: string;
   startedByHouseholdId: string;
   startedByHouseholdName: string;
+  startedByUserName?: string;
 }
 
 export type CreateTripResult =
@@ -52,7 +53,7 @@ export type CreateTripResult =
 export async function createTrip(
   params: CreateTripParams
 ): Promise<CreateTripResult> {
-  const { groupId, startedByHouseholdId, startedByHouseholdName } = params;
+  const { groupId, startedByHouseholdId, startedByHouseholdName, startedByUserName } = params;
 
   const tripsRef = collection(db, "groups", groupId, "trips");
 
@@ -74,6 +75,7 @@ export async function createTrip(
       status: data.status,
       startedByHouseholdId: data.startedByHouseholdId,
       startedByHouseholdName: data.startedByHouseholdName,
+      startedByUserName: data.startedByUserName ?? undefined,
       purchasedItems: data.purchasedItems ?? [],
     };
     return { conflict: true, activeTrip };
@@ -86,6 +88,7 @@ export async function createTrip(
     status: "active",
     startedByHouseholdId,
     startedByHouseholdName,
+    ...(startedByUserName ? { startedByUserName } : {}),
     purchasedItems: [],
   });
 
@@ -126,6 +129,7 @@ export function subscribeToActiveTrip(
       status: data.status,
       startedByHouseholdId: data.startedByHouseholdId,
       startedByHouseholdName: data.startedByHouseholdName,
+      startedByUserName: data.startedByUserName ?? undefined,
       purchasedItems: data.purchasedItems ?? [],
     });
   });
@@ -242,6 +246,7 @@ export function subscribeToCompletedTrips(
         status: data.status,
         startedByHouseholdId: data.startedByHouseholdId,
         startedByHouseholdName: data.startedByHouseholdName,
+        startedByUserName: data.startedByUserName ?? undefined,
         purchasedItems: data.purchasedItems ?? [],
       };
     });

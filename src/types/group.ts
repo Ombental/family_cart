@@ -5,6 +5,7 @@ export interface Group {
   name: string;
   inviteCode: string;
   inviteExpiresAt: Timestamp;
+  createdByUserId?: string;
 }
 
 export interface Household {

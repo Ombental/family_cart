@@ -31,7 +31,8 @@ export interface UseTripResult {
 export function useTrip(
   groupId: string | undefined,
   householdId: string,
-  householdName: string
+  householdName: string,
+  userName?: string
 ): UseTripResult {
   const [activeTrip, setActiveTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState(true);
@@ -58,8 +59,9 @@ export function useTrip(
       groupId,
       startedByHouseholdId: householdId,
       startedByHouseholdName: householdName,
+      startedByUserName: userName,
     });
-  }, [groupId, householdId, householdName]);
+  }, [groupId, householdId, householdName, userName]);
 
   const completeTrip = useCallback(async (): Promise<void> => {
     if (!groupId) throw new Error("No group selected.");
