@@ -186,7 +186,7 @@ export function ItemCombobox({
               <span>{suggestion.name}</span>
               {suggestion.unit && (
                 <span className="text-muted-foreground ms-2 shrink-0">
-                  {suggestion.qty} {suggestion.unit}
+                  {suggestion.qty} {t("units." + suggestion.unit)}
                 </span>
               )}
             </div>

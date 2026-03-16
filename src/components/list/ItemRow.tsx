@@ -30,10 +30,11 @@ export function ItemRow({ item, household, onClick, children }: ItemRowProps) {
   const { t } = useLanguage();
   const isBought = item.status === "bought";
 
+  const translatedUnit = item.unit ? t("units." + item.unit) : "";
   const qtyLabel =
     item.qty > 0
-      ? `${item.qty}${item.unit ? ` ${item.unit}` : ""}`
-      : item.unit || null;
+      ? `${item.qty}${translatedUnit ? ` ${translatedUnit}` : ""}`
+      : translatedUnit || null;
 
   // Build meta line segments: "Qty: 2 L", "Household Name"
   const metaParts: string[] = [];

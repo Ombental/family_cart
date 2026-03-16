@@ -35,10 +35,11 @@ export function ShopperSubRow({
     onToggle(item.id);
   }, [onToggle, item.id]);
 
+  const translatedUnit = item.unit ? t("units." + item.unit) : "";
   const qtyLabel =
     item.qty > 0
-      ? `${item.qty}${item.unit ? ` ${item.unit}` : ""}`
-      : item.unit || null;
+      ? `${item.qty}${translatedUnit ? ` ${translatedUnit}` : ""}`
+      : translatedUnit || null;
 
   const householdName = household?.name ?? "Unknown";
 

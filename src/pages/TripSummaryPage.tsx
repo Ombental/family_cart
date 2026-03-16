@@ -256,7 +256,7 @@ export function TripSummaryPage() {
                               </span>
                               {item.qty > 0 && (
                                 <p className="text-[11px] text-[#8e8c99]">
-                                  {t("items.qty", { label: item.qty + (item.unit ? ` · ${item.unit}` : "") })}
+                                  {t("items.qty", { label: item.qty + (item.unit ? ` · ${t("units." + item.unit)}` : "") })}
                                 </p>
                               )}
                             </div>
