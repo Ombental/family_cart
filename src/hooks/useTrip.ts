@@ -23,7 +23,7 @@ export interface UseTripResult {
   activeTrip: Trip | null;
   loading: boolean;
   startTrip: () => Promise<CreateTripResult>;
-  completeTrip: () => Promise<void>;
+  completeTrip: (metadata: { storeName: string; totalAmount: number; completedByUserId: string }) => Promise<void>;
   isShopperMode: boolean;
   isCurrentHouseholdShopping: boolean;
 }
@@ -63,12 +63,13 @@ export function useTrip(
     });
   }, [groupId, householdId, householdName, userName]);
 
-  const completeTrip = useCallback(async (): Promise<void> => {
+  const completeTrip = useCallback(async (metadata: { storeName: string; totalAmount: number; completedByUserId: string }): Promise<void> => {
     if (!groupId) throw new Error("No group selected.");
     if (!activeTrip) throw new Error("No active trip to complete.");
     return firestoreCompleteTrip({
       groupId,
       tripId: activeTrip.id,
+      ...metadata,
     });
   }, [groupId, activeTrip]);
 

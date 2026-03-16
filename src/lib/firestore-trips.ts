@@ -17,6 +17,7 @@ import {
   limit,
   orderBy,
   writeBatch,
+  updateDoc,
   Timestamp,
   type Unsubscribe,
 } from "firebase/firestore";
@@ -77,6 +78,9 @@ export async function createTrip(
       startedByHouseholdName: data.startedByHouseholdName,
       startedByUserName: data.startedByUserName ?? undefined,
       purchasedItems: data.purchasedItems ?? [],
+      storeName: data.storeName ?? undefined,
+      totalAmount: data.totalAmount ?? undefined,
+      completedByUserId: data.completedByUserId ?? undefined,
     };
     return { conflict: true, activeTrip };
   }
@@ -131,6 +135,9 @@ export function subscribeToActiveTrip(
       startedByHouseholdName: data.startedByHouseholdName,
       startedByUserName: data.startedByUserName ?? undefined,
       purchasedItems: data.purchasedItems ?? [],
+      storeName: data.storeName ?? undefined,
+      totalAmount: data.totalAmount ?? undefined,
+      completedByUserId: data.completedByUserId ?? undefined,
     });
   });
 }
@@ -142,6 +149,9 @@ export function subscribeToActiveTrip(
 export interface CompleteTripParams {
   groupId: string;
   tripId: string;
+  storeName: string;
+  totalAmount: number;
+  completedByUserId: string;
 }
 
 /**
@@ -155,7 +165,7 @@ export interface CompleteTripParams {
  * 4. Pending/missed items remain untouched on the list.
  */
 export async function completeTrip(params: CompleteTripParams): Promise<void> {
-  const { groupId, tripId } = params;
+  const { groupId, tripId, storeName, totalAmount, completedByUserId } = params;
 
   // 1. Query bought items
   const itemsRef = collection(db, "groups", groupId, "items");
@@ -185,6 +195,9 @@ export async function completeTrip(params: CompleteTripParams): Promise<void> {
     status: "complete",
     completedAt: serverTimestamp(),
     purchasedItems,
+    storeName,
+    totalAmount,
+    completedByUserId,
   });
   for (const boughtDoc of boughtSnap.docs) {
     batch.delete(boughtDoc.ref);
@@ -249,8 +262,32 @@ export function subscribeToCompletedTrips(
         startedByHouseholdName: data.startedByHouseholdName,
         startedByUserName: data.startedByUserName ?? undefined,
         purchasedItems: data.purchasedItems ?? [],
+        storeName: data.storeName ?? undefined,
+        totalAmount: data.totalAmount ?? undefined,
+        completedByUserId: data.completedByUserId ?? undefined,
       };
     });
     onChange(trips);
   });
+}
+
+// ---------------------------------------------------------------------------
+// UPDATE TRIP METADATA  (post-completion editing)
+// ---------------------------------------------------------------------------
+
+export interface UpdateTripMetadataParams {
+  groupId: string;
+  tripId: string;
+  storeName: string;
+  totalAmount: number;
+}
+
+/**
+ * Update only the storeName and totalAmount on a completed trip.
+ * Used by the trip owner to correct metadata after completion.
+ */
+export async function updateTripMetadata(params: UpdateTripMetadataParams): Promise<void> {
+  const { groupId, tripId, storeName, totalAmount } = params;
+  const tripRef = doc(db, "groups", groupId, "trips", tripId);
+  await updateDoc(tripRef, { storeName, totalAmount });
 }

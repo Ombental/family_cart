@@ -213,6 +213,16 @@ const en: Record<string, string> = {
   "shopper.new": "New",
   "shopper.done": "{{bought}} of {{total}} done",
 
+  // ---- completion form ----
+  "completion.store": "Store",
+  "completion.totalAmount": "Total amount",
+  "completion.addStore": "Add \"{{name}}\"",
+  "completion.complete": "Complete",
+  "completion.save": "Save",
+  "completion.cancel": "Cancel",
+  "completion.storeRequired": "Please select a store",
+  "completion.amountRequired": "Please enter the total amount",
+
   // ---- conflict ----
   "conflict.title": "Trip Already Active",
   "conflict.desc": "{{name}} is already on a shopping trip. Only one shopping trip can be active at a time. Please wait for them to finish.",
@@ -235,6 +245,8 @@ const en: Record<string, string> = {
   "trips.perHousehold": "Per Household",
   "trips.noItemsPurchased": "No items were purchased in this trip.",
   "trips.done": "Done",
+  "trips.totalAmount": "Total amount",
+  "trips.storeName": "Store",
 
   // ---- profile ----
   "profile.title": "Profile",
@@ -483,6 +495,16 @@ const he: Record<string, string> = {
   "shopper.new": "\u05D7\u05D3\u05E9",
   "shopper.done": "{{bought}} \u05DE\u05EA\u05D5\u05DA {{total}} \u05D4\u05D5\u05E9\u05DC\u05DE\u05D5",
 
+  // ---- completion form ----
+  "completion.store": "\u05D7\u05E0\u05D5\u05EA",
+  "completion.totalAmount": "\u05E1\u05DB\u05D5\u05DD \u05DB\u05D5\u05DC\u05DC",
+  "completion.addStore": "\u05D4\u05D5\u05E1\u05E3 \"{{name}}\"",
+  "completion.complete": "\u05E1\u05D9\u05D5\u05DD",
+  "completion.save": "\u05E9\u05DE\u05D9\u05E8\u05D4",
+  "completion.cancel": "\u05D1\u05D9\u05D8\u05D5\u05DC",
+  "completion.storeRequired": "\u05E0\u05D0 \u05DC\u05D1\u05D7\u05D5\u05E8 \u05D7\u05E0\u05D5\u05EA",
+  "completion.amountRequired": "\u05E0\u05D0 \u05DC\u05D4\u05D6\u05D9\u05DF \u05E1\u05DB\u05D5\u05DD",
+
   // ---- conflict ----
   "conflict.title": "\u05E7\u05E0\u05D9\u05D5\u05EA \u05DB\u05D1\u05E8 \u05E4\u05E2\u05D9\u05DC\u05D4",
   "conflict.desc": "{{name}} \u05DB\u05D1\u05E8 \u05D1\u05E7\u05E0\u05D9\u05D5\u05EA. \u05E8\u05E7 \u05E7\u05E0\u05D9\u05D5\u05EA \u05D0\u05D7\u05EA \u05D9\u05DB\u05D5\u05DC\u05D4 \u05DC\u05D4\u05D9\u05D5\u05EA \u05E4\u05E2\u05D9\u05DC\u05D4 \u05D1\u05D5 \u05D6\u05DE\u05E0\u05D9\u05EA. \u05D0\u05E0\u05D0 \u05D4\u05DE\u05EA\u05DF \u05E9\u05D9\u05E1\u05D9\u05D9\u05DE\u05D5.",
@@ -505,6 +527,8 @@ const he: Record<string, string> = {
   "trips.perHousehold": "\u05DC\u05E4\u05D9 \u05DE\u05E9\u05E7 \u05D1\u05D9\u05EA",
   "trips.noItemsPurchased": "\u05DC\u05D0 \u05E0\u05E7\u05E0\u05D5 \u05E4\u05E8\u05D9\u05D8\u05D9\u05DD \u05D1\u05E7\u05E0\u05D9\u05D4 \u05D6\u05D5.",
   "trips.done": "\u05E1\u05D9\u05D5\u05DD",
+  "trips.totalAmount": "\u05E1\u05DB\u05D5\u05DD \u05DB\u05D5\u05DC\u05DC",
+  "trips.storeName": "\u05D7\u05E0\u05D5\u05EA",
 
   // ---- profile ----
   "profile.title": "\u05E4\u05E8\u05D5\u05E4\u05D9\u05DC",

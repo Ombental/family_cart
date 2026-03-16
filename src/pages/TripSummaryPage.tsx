@@ -6,12 +6,17 @@ import {
   ChevronDown,
   ChevronUp,
   Loader2,
+  Pencil,
   ShoppingCart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
 import { useGroup } from "@/hooks/useGroup";
+import { useStores } from "@/hooks/useStores";
 import { useTripHistory } from "@/hooks/useTripHistory";
+import { updateTripMetadata } from "@/lib/firestore-trips";
+import { TripCompletionForm } from "@/components/shopper/TripCompletionForm";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { Household } from "@/types/group";
 import type { PurchasedItemSnapshot } from "@/types/trip";
@@ -61,8 +66,12 @@ export function TripSummaryPage() {
   }>();
   const navigate = useNavigate();
   const { t, lang } = useLanguage();
+  const { user } = useAuth();
   const { trips, loading: tripsLoading } = useTripHistory(groupId);
   const { households, loading: groupLoading } = useGroup(groupId);
+  const { stores, addStore } = useStores(groupId);
+  const [editing, setEditing] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const trip = useMemo(
     () => trips.find((tr) => tr.id === tripId) ?? null,
@@ -177,6 +186,31 @@ export function TripSummaryPage() {
         <p className="text-sm text-[#82827c]">
           {dateLabel} &mdash; by {shopperName}
         </p>
+        {trip.storeName && (
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-[#1a1a1a]">{trip.storeName}</p>
+            {trip.completedByUserId && user?.id === trip.completedByUserId && (
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                className="p-1 rounded-full hover:bg-[#f0f0f0] transition-colors"
+                aria-label="Edit trip details"
+              >
+                <Pencil className="h-3.5 w-3.5 text-[#82827c]" />
+              </button>
+            )}
+          </div>
+        )}
+        {!trip.storeName && trip.completedByUserId && user?.id === trip.completedByUserId && (
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="p-1 rounded-full hover:bg-[#f0f0f0] transition-colors"
+            aria-label="Edit trip details"
+          >
+            <Pencil className="h-3.5 w-3.5 text-[#82827c]" />
+          </button>
+        )}
       </div>
 
       {/* ---- Summary card ---- */}
@@ -196,6 +230,13 @@ export function TripSummaryPage() {
                 {totalPurchased}
               </span>
             </div>
+
+            {trip.totalAmount != null && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-[#82827c]">{t("trips.totalAmount")}</span>
+                <span className="text-lg font-bold text-[#1a1a1a]">{trip.totalAmount.toFixed(2)}</span>
+              </div>
+            )}
 
             {/* Per-household breakdown */}
             {householdGroups.length > 0 && (
@@ -278,6 +319,33 @@ export function TripSummaryPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* ---- Edit form overlay ---- */}
+      {editing && trip && (
+        <TripCompletionForm
+          stores={stores}
+          onAddStore={addStore}
+          initialStoreName={trip.storeName}
+          initialAmount={trip.totalAmount}
+          mode="edit"
+          submitting={savingEdit}
+          onCancel={() => setEditing(false)}
+          onSubmit={async (data) => {
+            setSavingEdit(true);
+            try {
+              await updateTripMetadata({
+                groupId: groupId!,
+                tripId: tripId!,
+                storeName: data.storeName,
+                totalAmount: data.totalAmount,
+              });
+              setEditing(false);
+            } finally {
+              setSavingEdit(false);
+            }
+          }}
+        />
+      )}
 
       {/* ---- Done button (fixed bottom) ---- */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#f0f0f0] px-4 py-3 z-10">
