@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { ShoppingCart, CheckCircle2 } from "lucide-react";
 import { ItemRow } from "@/components/list/ItemRow";
 import { EditItemForm } from "@/components/list/EditItemForm";
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { Item } from "@/types/item";
 import type { Household } from "@/types/group";
 import type { ItemSuggestion } from "@/hooks/useItemCatalog";
@@ -43,6 +44,7 @@ export function GroceryList({
   onToggleStatus,
   suggestions,
 }: GroceryListProps) {
+  const { t } = useLanguage();
   const [activeFilter, setActiveFilter] = useState<string | null>(null); // null = "All"
 
   const householdMap = new Map(households.map((h) => [h.id, h]));
@@ -77,8 +79,8 @@ export function GroceryList({
     return (
       <div className="text-center py-10 text-muted-foreground">
         <ShoppingCart className="h-8 w-8 mx-auto mb-3 opacity-50" />
-        <p className="text-sm">No items yet.</p>
-        <p className="text-xs mt-1">Add something to get started.</p>
+        <p className="text-sm">{t("items.noItems")}</p>
+        <p className="text-xs mt-1">{t("items.addToGetStarted")}</p>
       </div>
     );
   }
@@ -97,7 +99,7 @@ export function GroceryList({
               : "bg-white border border-[#e0e0e0] text-[#82827c]"
           }`}
         >
-          All
+          {t("items.all")}
         </button>
 
         {/* Per-household tabs */}
@@ -124,8 +126,8 @@ export function GroceryList({
       {/* Item count */}
       <p className="text-xs text-muted-foreground">
         {boughtCount > 0
-          ? `${boughtCount} of ${filteredItems.length} done`
-          : `${filteredItems.length} item${filteredItems.length !== 1 ? "s" : ""}`}
+          ? t("items.done", { bought: boughtCount, total: filteredItems.length })
+          : filteredItems.length !== 1 ? t("common.itemsPlural", { count: filteredItems.length }) : t("common.items", { count: filteredItems.length })}
       </p>
 
       {/* Pending items */}
@@ -148,7 +150,7 @@ export function GroceryList({
           <div className="flex items-center gap-2 pt-2">
             <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="text-xs font-medium text-muted-foreground">
-              Purchased ({purchasedItems.length})
+              {t("items.purchased", { count: purchasedItems.length })}
             </span>
             <div className="flex-1 border-t border-muted" />
           </div>
