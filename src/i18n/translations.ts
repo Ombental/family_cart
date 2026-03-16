@@ -247,6 +247,7 @@ const en: Record<string, string> = {
   "trips.done": "Done",
   "trips.totalAmount": "Total amount",
   "trips.storeName": "Store",
+  "trips.split": "Split",
 
   // ---- profile ----
   "profile.title": "Profile",
@@ -529,6 +530,7 @@ const he: Record<string, string> = {
   "trips.done": "\u05E1\u05D9\u05D5\u05DD",
   "trips.totalAmount": "\u05E1\u05DB\u05D5\u05DD \u05DB\u05D5\u05DC\u05DC",
   "trips.storeName": "\u05D7\u05E0\u05D5\u05EA",
+  "trips.split": "\u05D7\u05D5\u05DC\u05E7",
 
   // ---- profile ----
   "profile.title": "\u05E4\u05E8\u05D5\u05E4\u05D9\u05DC",

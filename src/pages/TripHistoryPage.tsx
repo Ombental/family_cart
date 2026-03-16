@@ -155,9 +155,16 @@ function TripCard({ trip, lang, t, onClick }: TripCardProps) {
           <p className="text-sm text-muted-foreground truncate">
             {t("trips.startedBy", { name: trip.startedByUserName || trip.startedByHouseholdName })}
           </p>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-            <Package className="h-3 w-3" />
-            {itemCount !== 1 ? t("trips.itemsPurchasedPlural", { count: itemCount }) : t("trips.itemsPurchased", { count: itemCount })}
+          <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Package className="h-3 w-3" />
+              {itemCount !== 1 ? t("trips.itemsPurchasedPlural", { count: itemCount }) : t("trips.itemsPurchased", { count: itemCount })}
+            </div>
+            {trip.split && (
+              <span className="inline-flex items-center rounded-full bg-[#e6f9ed] px-2 py-0.5 text-[10px] font-medium text-[#30a46c]">
+                {t("trips.split")}
+              </span>
+            )}
           </div>
         </div>
         {trip.totalAmount != null && (

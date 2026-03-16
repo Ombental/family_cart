@@ -15,7 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useGroup } from "@/hooks/useGroup";
 import { useStores } from "@/hooks/useStores";
 import { useTripHistory } from "@/hooks/useTripHistory";
-import { updateTripMetadata } from "@/lib/firestore-trips";
+import { updateTripMetadata, toggleTripSplit } from "@/lib/firestore-trips";
 import { TripCompletionForm } from "@/components/shopper/TripCompletionForm";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { Household } from "@/types/group";
@@ -186,6 +186,11 @@ export function TripSummaryPage() {
         <p className="text-sm text-[#82827c]">
           {dateLabel} &mdash; by {shopperName}
         </p>
+        {trip.split && (
+          <span className="inline-flex items-center rounded-full bg-[#e6f9ed] px-2.5 py-0.5 text-xs font-medium text-[#30a46c]">
+            {t("trips.split")}
+          </span>
+        )}
         {trip.storeName && (
           <div className="flex items-center gap-1.5">
             <p className="text-sm font-medium text-[#1a1a1a]">{trip.storeName}</p>
@@ -237,6 +242,26 @@ export function TripSummaryPage() {
                 <span className="text-lg font-bold text-[#1a1a1a]">{trip.totalAmount.toFixed(2)}</span>
               </div>
             )}
+
+            {/* Split toggle */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-[#82827c]">{t("trips.split")}</span>
+              <button
+                type="button"
+                onClick={() => toggleTripSplit(groupId!, tripId!, !trip.split)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  trip.split ? "bg-[#30a46c]" : "bg-gray-200"
+                }`}
+                role="switch"
+                aria-checked={!!trip.split}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    trip.split ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
 
             {/* Per-household breakdown */}
             {householdGroups.length > 0 && (

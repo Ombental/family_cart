@@ -48,4 +48,5 @@ export interface Trip {
   storeName?: string;
   totalAmount?: number;
   completedByUserId?: string;
+  split?: boolean;
 }

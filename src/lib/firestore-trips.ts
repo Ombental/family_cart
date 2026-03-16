@@ -81,6 +81,7 @@ export async function createTrip(
       storeName: data.storeName ?? undefined,
       totalAmount: data.totalAmount ?? undefined,
       completedByUserId: data.completedByUserId ?? undefined,
+      split: data.split ?? false,
     };
     return { conflict: true, activeTrip };
   }
@@ -269,6 +270,23 @@ export function subscribeToCompletedTrips(
     });
     onChange(trips);
   });
+}
+
+// ---------------------------------------------------------------------------
+// TOGGLE TRIP SPLIT FLAG
+// ---------------------------------------------------------------------------
+
+/**
+ * Toggle the `split` boolean on a completed trip.
+ * Any group member can mark a trip as split (groceries distributed).
+ */
+export async function toggleTripSplit(
+  groupId: string,
+  tripId: string,
+  split: boolean
+): Promise<void> {
+  const tripRef = doc(db, "groups", groupId, "trips", tripId);
+  await updateDoc(tripRef, { split });
 }
 
 // ---------------------------------------------------------------------------

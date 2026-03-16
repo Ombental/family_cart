@@ -186,6 +186,7 @@ describe("createTrip", () => {
         startedByHouseholdId: "household-2",
         startedByHouseholdName: "Jones Family",
         purchasedItems: [],
+        split: false,
       },
     });
   });
