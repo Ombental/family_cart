@@ -49,6 +49,13 @@ service cloud.firestore {
         // from group operations. For pilot, allow all.
         // TODO: allow write: if request.auth.uid == userId;
       }
+
+      // FCM token subcollection (push notifications)
+      match /fcmTokens/{tokenId} {
+        allow read, write: if true;
+        // NOTE: Permissive for pilot. No Firebase Auth = no request.auth.uid.
+        // TODO: allow read, write: if request.auth.uid == userId;
+      }
     }
 
     // -----------------------------------------------------------------------

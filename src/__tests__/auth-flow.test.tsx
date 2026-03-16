@@ -20,7 +20,11 @@ import { MemoryRouter } from "react-router-dom";
 // ---------------------------------------------------------------------------
 // Mock firebase (transitive dep via firestore-users)
 // ---------------------------------------------------------------------------
-vi.mock("@/lib/firebase", () => ({ db: {} }));
+vi.mock("@/lib/firebase", () => ({ db: {}, app: {} }));
+vi.mock("@/lib/firebase-messaging", () => ({
+  removeFcmToken: vi.fn(),
+  isNotificationSupported: vi.fn(() => false),
+}));
 
 // ---------------------------------------------------------------------------
 // Mock firestore-users (used by AuthProvider & component tests)

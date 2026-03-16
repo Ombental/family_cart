@@ -39,6 +39,11 @@ vi.mock("firebase/app", () => ({
 
 vi.mock("@/lib/firebase", () => ({
   db: { _mockDb: true },
+  app: {},
+}));
+vi.mock("@/lib/firebase-messaging", () => ({
+  removeFcmToken: vi.fn(),
+  isNotificationSupported: vi.fn(() => false),
 }));
 
 // ---------------------------------------------------------------------------

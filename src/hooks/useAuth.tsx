@@ -27,6 +27,7 @@ import {
   createUser,
   updateUserName,
 } from "@/lib/firestore-users";
+import { removeFcmToken, isNotificationSupported } from "@/lib/firebase-messaging";
 
 // ---------------------------------------------------------------------------
 // CONTEXT TYPE
@@ -113,9 +114,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ---- logout ----
   const logout = useCallback(() => {
+    // Clean up FCM token so this device stops receiving notifications
+    if (user && isNotificationSupported() && Notification.permission === 'granted') {
+      removeFcmToken(user.id).catch(() => {
+        // Best-effort — don't block logout on FCM cleanup failure
+      });
+    }
     clearSession();
     setUser(null);
-  }, []);
+  }, [user]);
 
   // ---- updateName ----
   const updateName = useCallback(
