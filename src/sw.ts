@@ -50,5 +50,14 @@ const messaging = getMessaging(firebaseApp);
 
 onBackgroundMessage(messaging, (payload) => {
   console.log('[SW] Background message received:', payload);
-  // Custom notification display will be added in server-side sprint
+
+  const title = payload.notification?.title ?? 'FamilyCart';
+  const options: NotificationOptions = {
+    body: payload.notification?.body,
+    icon: '/pwa-192x192.png',
+    badge: '/pwa-192x192.png',
+    data: payload.data,
+  };
+
+  self.registration.showNotification(title, options);
 });
