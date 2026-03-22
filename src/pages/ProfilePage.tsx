@@ -1,12 +1,13 @@
 import { type FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Pencil, X, Check, Phone, User } from "lucide-react";
+import { LogOut, Pencil, X, Check, Phone, User, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useNotifications } from "@/hooks/useNotifications";
 
 /**
  * Profile page — displays the current user's phone number (read-only)
@@ -16,6 +17,7 @@ export function ProfilePage() {
   const { user, updateName, logout } = useAuth();
   const navigate = useNavigate();
   const { t, lang, setLang } = useLanguage();
+  const { permissionStatus, requestPermission } = useNotifications();
 
   const [isEditing, setIsEditing] = useState(false);
   const [nameInput, setNameInput] = useState("");
@@ -164,6 +166,45 @@ export function ProfilePage() {
               עברית
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Notifications */}
+      <Card>
+        <CardContent className="pt-6 space-y-3">
+          <label className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <Bell className="h-3 w-3" />
+            {t('notifications.settings')}
+          </label>
+
+          {permissionStatus === 'granted' && (
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-green-500" />
+              <p className="text-sm">{t('notifications.enabled')}</p>
+            </div>
+          )}
+
+          {permissionStatus === 'default' && (
+            <Button variant="outline" className="w-full" onClick={requestPermission}>
+              {t('notifications.enable')}
+            </Button>
+          )}
+
+          {permissionStatus === 'denied' && (
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-destructive" />
+                <p className="text-sm">{t('notifications.blocked')}</p>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t('notifications.blockedHelp')}
+              </p>
+            </div>
+          )}
+
+          {permissionStatus === 'unsupported' && (
+            <p className="text-sm text-muted-foreground">{t('notifications.disabled')}</p>
+          )}
         </CardContent>
       </Card>
 
