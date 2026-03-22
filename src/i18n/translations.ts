@@ -191,6 +191,8 @@ const en: Record<string, string> = {
   "items.create": "Create",
   "items.department": "Department",
   "items.departmentPlaceholder": "e.g. Dairy, Produce, Bakery...",
+  "items.searchDepartment": "Search or type new...",
+  "items.noDepartmentsFound": "No departments found",
   "items.uncategorized": "Uncategorized",
   "items.createDepartment": "Create",
 
@@ -482,6 +484,8 @@ const he: Record<string, string> = {
   "items.create": "\u05D9\u05E6\u05D9\u05E8\u05D4",
   "items.department": "\u05DE\u05D7\u05DC\u05E7\u05D4",
   "items.departmentPlaceholder": "\u05DC\u05DE\u05E9\u05DC: \u05DE\u05D5\u05E6\u05E8\u05D9 \u05D7\u05DC\u05D1, \u05D9\u05E8\u05E7\u05D5\u05EA, \u05DE\u05D0\u05E4\u05D9\u05D9\u05D4...",
+  "items.searchDepartment": "\u05D7\u05D9\u05E4\u05D5\u05E9 \u05D0\u05D5 \u05D4\u05E7\u05DC\u05D3\u05D4 \u05D7\u05D3\u05E9\u05D4...",
+  "items.noDepartmentsFound": "\u05DC\u05D0 \u05E0\u05DE\u05E6\u05D0\u05D5 \u05DE\u05D7\u05DC\u05E7\u05D5\u05EA",
   "items.uncategorized": "\u05DC\u05DC\u05D0 \u05E7\u05D8\u05D2\u05D5\u05E8\u05D9\u05D4",
   "items.createDepartment": "\u05D9\u05E6\u05D9\u05E8\u05D4",
 

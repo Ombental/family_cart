@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Popover as PopoverPrimitive } from "radix-ui";
-import { Plus } from "lucide-react";
+import { ChevronDown, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 
@@ -26,26 +26,27 @@ export function DepartmentCombobox({
   id,
 }: DepartmentComboboxProps) {
   const { t } = useLanguage();
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const searchRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
+  const [search, setSearch] = React.useState("");
   const [highlightIndex, setHighlightIndex] = React.useState(-1);
 
-  // Filter suggestions based on current value
+  // Filter suggestions based on search text (not the selected value)
   const filtered = React.useMemo(() => {
-    const trimmed = value.trim().toLowerCase();
+    const trimmed = search.trim().toLowerCase();
     const list =
       trimmed === ""
         ? suggestions
         : suggestions.filter((s) => s.toLowerCase().includes(trimmed));
     return list.slice(0, MAX_VISIBLE);
-  }, [suggestions, value]);
+  }, [suggestions, search]);
 
   // Determine whether to show the "Create" row
-  const trimmedValue = value.trim();
+  const trimmedSearch = search.trim();
   const hasExactMatch = filtered.some(
-    (s) => s.toLowerCase() === trimmedValue.toLowerCase()
+    (s) => s.toLowerCase() === trimmedSearch.toLowerCase()
   );
-  const showCreate = trimmedValue.length > 0 && !hasExactMatch;
+  const showCreate = trimmedSearch.length > 0 && !hasExactMatch;
 
   // Build full list of navigable items (suggestions + optional create row)
   const totalItems = filtered.length + (showCreate ? 1 : 0);
@@ -56,30 +57,29 @@ export function DepartmentCombobox({
     setHighlightIndex(-1);
   }, [filtered.length, showCreate]);
 
-  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-    onChange(e.target.value);
-    if (!open) setOpen(true);
-  }
-
-  function handleInputFocus() {
+  function handleOpen() {
+    if (disabled) return;
+    setSearch("");
     setOpen(true);
   }
 
   function selectSuggestion(suggestion: string) {
     onChange(suggestion);
+    setSearch("");
     setOpen(false);
   }
 
   function selectCreate() {
-    onChange(value);
+    onChange(trimmedSearch);
+    setSearch("");
     setOpen(false);
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (!open || totalItems === 0) {
-      if (e.key === "ArrowDown") {
-        setOpen(true);
+    if (totalItems === 0) {
+      if (e.key === "Escape") {
         e.preventDefault();
+        setOpen(false);
       }
       return;
     }
@@ -116,29 +116,26 @@ export function DepartmentCombobox({
     }
   }
 
-  const shouldShowDropdown = open && totalItems > 0;
-
   return (
-    <PopoverPrimitive.Root open={shouldShowDropdown}>
+    <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
       <PopoverPrimitive.Anchor asChild>
-        <input
-          ref={inputRef}
+        <button
+          type="button"
           id={id}
-          type="text"
-          value={value}
-          onChange={handleInputChange}
-          onFocus={handleInputFocus}
-          onKeyDown={handleKeyDown}
+          onClick={handleOpen}
           disabled={disabled}
-          placeholder={placeholder}
-          autoComplete="off"
           className={cn(
-            "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+            "border-input flex h-9 w-full min-w-0 items-center justify-between rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
             "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-            "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+            value ? "text-foreground" : "text-muted-foreground",
             className
           )}
-        />
+        >
+          <span className="truncate">
+            {value || placeholder || t("items.departmentPlaceholder")}
+          </span>
+          <ChevronDown className="text-muted-foreground ml-1 size-4 shrink-0" />
+        </button>
       </PopoverPrimitive.Anchor>
 
       <PopoverPrimitive.Portal>
@@ -146,48 +143,72 @@ export function DepartmentCombobox({
           side="bottom"
           align="start"
           sideOffset={4}
-          onOpenAutoFocus={(e) => e.preventDefault()}
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+            searchRef.current?.focus();
+          }}
           onCloseAutoFocus={(e) => e.preventDefault()}
-          onInteractOutside={() => setOpen(false)}
-          onPointerDownOutside={() => setOpen(false)}
           style={{ width: "var(--radix-popover-trigger-width)" }}
-          className="z-[60] max-h-56 overflow-y-auto rounded-lg bg-white shadow-lg"
+          className="z-[60] overflow-hidden rounded-lg bg-white shadow-lg"
         >
-          {filtered.map((suggestion, index) => (
-            <div
-              key={suggestion}
-              role="option"
-              aria-selected={index === highlightIndex}
-              onPointerDown={(e) => e.preventDefault()}
-              onClick={() => selectSuggestion(suggestion)}
-              onMouseEnter={() => setHighlightIndex(index)}
-              className={cn(
-                "flex cursor-pointer items-center px-3 py-2 text-sm",
-                index === highlightIndex && "bg-muted"
-              )}
-            >
-              <span>{suggestion}</span>
-            </div>
-          ))}
+          {/* Search / autocomplete input */}
+          <div className="border-b px-3 py-2">
+            <input
+              ref={searchRef}
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={t("items.searchDepartment")}
+              autoComplete="off"
+              className="placeholder:text-muted-foreground h-7 w-full bg-transparent text-sm outline-none"
+            />
+          </div>
 
-          {showCreate && (
-            <div
-              role="option"
-              aria-selected={createIndex === highlightIndex}
-              onPointerDown={(e) => e.preventDefault()}
-              onClick={selectCreate}
-              onMouseEnter={() => setHighlightIndex(createIndex)}
-              className={cn(
-                "flex cursor-pointer items-center gap-2 px-3 py-2 text-sm",
-                createIndex === highlightIndex && "bg-muted"
-              )}
-            >
-              <Plus className="size-4 shrink-0" />
-              <span>
-                {t("items.createDepartment")} &ldquo;{trimmedValue}&rdquo;
-              </span>
-            </div>
-          )}
+          {/* Options list */}
+          <div className="max-h-48 overflow-y-auto">
+            {filtered.map((suggestion, index) => (
+              <div
+                key={suggestion}
+                role="option"
+                aria-selected={index === highlightIndex}
+                onPointerDown={(e) => e.preventDefault()}
+                onClick={() => selectSuggestion(suggestion)}
+                onMouseEnter={() => setHighlightIndex(index)}
+                className={cn(
+                  "flex cursor-pointer items-center px-3 py-2 text-sm",
+                  index === highlightIndex && "bg-muted"
+                )}
+              >
+                <span>{suggestion}</span>
+              </div>
+            ))}
+
+            {showCreate && (
+              <div
+                role="option"
+                aria-selected={createIndex === highlightIndex}
+                onPointerDown={(e) => e.preventDefault()}
+                onClick={selectCreate}
+                onMouseEnter={() => setHighlightIndex(createIndex)}
+                className={cn(
+                  "flex cursor-pointer items-center gap-2 px-3 py-2 text-sm",
+                  createIndex === highlightIndex && "bg-muted"
+                )}
+              >
+                <Plus className="size-4 shrink-0" />
+                <span>
+                  {t("items.createDepartment")} &ldquo;{trimmedSearch}&rdquo;
+                </span>
+              </div>
+            )}
+
+            {totalItems === 0 && (
+              <div className="text-muted-foreground px-3 py-2 text-sm">
+                {t("items.noDepartmentsFound")}
+              </div>
+            )}
+          </div>
         </PopoverPrimitive.Content>
       </PopoverPrimitive.Portal>
     </PopoverPrimitive.Root>
